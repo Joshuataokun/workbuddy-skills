@@ -1,59 +1,67 @@
-# 我的 WorkBuddy 技能随身包
+# 我的 WorkBuddy 技能仓库
 
-打包时间：2026-10-24 17:25
-包含：8 个技能（4 个自建/本地 + 4 个市场来源），1.56 MB
+**仓库地址**：https://github.com/Joshuataokun/workbuddy-skills
+**内容**：8 个技能（4 个自建 + 4 个市场来源）+ 恢复脚本 + 交接说明
+**更新方式**：`bash sync.sh "本次改了什么"`
 
 ---
 
-## 为什么需要这个包
+## 两个方向，成本完全不同
 
-WorkBuddy 换电脑登录账号后：
-
-| 类型 | 会自动回来吗 | 说明 |
-|---|---|---|
-| 市场技能（find-skills / ppt-generator / multi-search-plus / wps） | **可能**会 | 安装记录在账号级存储里，且能凭市场 ID 重新下载 |
-| **自建/本地技能**（chinese-punctuation-fixer / html-shot / prompt-rewrite-guard / tuniu-cli） | **不会** | 技能文件只在 `C:\Users\<你>\.workbuddy\skills\` 这台机器上，没有任何上传通道。账号里只会留一条指向旧路径的死记录 |
-
-所以本地技能必须自己带走。这个包就是干这个用的。
-
-## 新电脑上怎么用（30 秒）
-
-1. 把整个文件夹解压到任意位置（路径别带特殊符号）。
-2. 先装好 WorkBuddy 并**登录同一个账号**，然后**完全退出** WorkBuddy。
-3. 双击 `RESTORE.bat`。
-4. 看到「技能处理完成: 8 个」后，重新打开 WorkBuddy。
-5. 打开技能列表确认。
-
-脚本做的事：把 old 版本备份到 `_replaced_时间戳` 目录，再拷入新版本；遇到含 `package.json` 的技能（HTML-Shot）会尝试 `npm install`，本机没装 Node 会提示但不报错。
-
-## 只想恢复其中几个
-
-把 `skills` 目录里不需要的子文件夹删掉，再运行 `RESTORE.bat` 即可。
-
-## 不要带的东西
-
-- `node_modules`：48 MB，换机后由 `npm install` 重建，包里故意没有。
-- `*.zip`：旧安装包，无用。
-
-## 以后怎么维护
-
-改完技能后，双击 `BACKUP.bat` 重新生成一份，覆盖旧的包。
-
-**注意**：`BACKUP.bat` 会先删掉包里的 `skills` 目录再重新拷，所以不要在包里手工放别的东西。
-
-## 清单
-
-详见 `manifest.json`（每个技能的名称、来源、文件数、字节数、SKILL.md 指纹）。
-
-## 2026-10-24 的技能清单
-
-| 技能 | 来源 | 文件数 | 说明 |
+| 方向 | 场景 | 需要凭据吗 | 谁执行 |
 |---|---|---|---|
-| chinese-punctuation-fixer | 本地 | 13 | 中文标点修复，v1.0.0，含 4 个测试 + 3 份语料 |
-| prompt-rewrite-guard | 本地 | 9 | 提示词改写守门员，v2.0.0（原 prompt-engineering-expert 改造版） |
-| html-shot | 本地 | 12 | HTML/URL 转图片，v1.1.6，需 node 依赖 |
-| tuniu-cli | 本地 | 11 | 途牛旅行，v1.1.1 |
-| find-skills | 市场 | 4 | 技能发现 |
-| ppt-generator | 市场 | 20 | PPT 生成 |
-| multi-search-plus | 市场 | 21 | 多引擎搜索 |
-| wps-office-suite | 市场 | 58 | WPS 全家桶 |
+| **读** | 换电脑，把技能拿回来 | **不需要**（公开仓库） | 助手一条命令 |
+| **写** | 改完技能，存回仓库 | 第一次要授权，之后免 | 助手一条命令 |
+
+## 换电脑恢复
+
+```bash
+git clone https://github.com/Joshuataokun/workbuddy-skills.git
+cd workbuddy-skills
+bash restore.sh          # 加 DRY_RUN=1 可先演练
+```
+
+或者直接对助手说「技能丢了，从 GitHub 恢复」。细则见 `AGENT-RESTORE.md`。
+
+## 备份（把本地改动推上去）
+
+```bash
+bash sync.sh "说明这次改了什么"
+DRY_RUN=1 bash sync.sh "先看看会改什么"    # 演练，不提交不推送
+```
+
+`sync.sh` 做四件事：从 `~/.workbuddy/skills` 重新导出 → **自动脱敏**（绝对路径换成 `<SKILLS_ROOT>`）→ 重建 `manifest.json` → 提交并推送。
+
+## 为什么不用 WorkBuddy 账号同步
+
+实测过：账号级存储只保存「装过哪些技能」的记录（名称、路径、版本），**不保存技能文件**。用户可见的云空间是「资料库」，但其技能说明里明确禁止把技能拆成文件上传充当跨设备同步。所以技能目前只能靠这个仓库带。
+
+## 哪些技能会自己回来
+
+| 类型 | 换机表现 |
+|---|---|
+| 市场技能（find-skills / ppt-generator / multi-search-plus / wps-office-suite） | 可能自动回来（凭市场 ID 重下，未在第二台设备实测）；仓库里仍存了一份兜底 |
+| 自建技能（chinese-punctuation-fixer / prompt-rewrite-guard / html-shot / tuniu-cli） | **不会自己回来**，必须用本仓库恢复 |
+
+## 目录
+
+| 路径 | 说明 |
+|---|---|
+| `skills/` | 8 个技能的真实文件 |
+| `manifest.json` | 技能数 / 文件数 / 字节数 / `SKILL.md` 指纹 |
+| `AGENT-RESTORE.md` | 给新机器上的助手看的执行说明 |
+| `restore.sh` | bash 恢复（macOS / Linux / Git Bash） |
+| `restore-skills.ps1` + `RESTORE.bat` | Windows 双击恢复（备用） |
+| `sync.sh` | 一键同步 + 推送 |
+| `backup-skills.ps1` + `BACKUP.bat` | 重新打包本机技能（不推送） |
+
+## 隐私说明
+
+仓库是公开的。打包前已扫描：无真实身份证 / 手机号（`张三` 等均为途牛报文示例）、无单位名、无密钥；本机绝对路径已统一替换为 `<SKILLS_ROOT>`。`node_modules`（48 MB）不入库，靠 `npm install` 重建。
+
+## 环境依赖
+
+| 技能 | 依赖 |
+|---|---|
+| html-shot | Node.js（`restore.sh` 会自动 `npm install`） |
+| chinese-punctuation-fixer | Python 3（标准库即可） |
