@@ -78,6 +78,20 @@ find . -name SKILL.md | wc -l     # 应为 8
 | `backup-skills.ps1` + `BACKUP.bat` | 重新打包本机技能 |
 | `README.md` | 给人看的说明 |
 
+## 备用：推送授权失效时
+
+正常推送走系统 Git Credential Manager，首次授权后凭据存在 Windows 凭据管理器，之后无感。若某台机器上 GCM 不可用（报 `could not read Username`），用一次性 token：
+
+1. 在 GitHub 生成细粒度 token：只对 `workbuddy-skills` 一个仓库，权限只要 **Contents: Read and write**
+2. 推送并立即作废：
+
+```bash
+AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+git -c credential.helper= -c http.extraheader="AUTHORIZATION: basic $AUTH" push -u origin main
+```
+
+`GH_TOKEN` 用环境变量传入，不要写进任何文件；推完到 GitHub 上 Revoke。
+
 ## 已知边界
 
 - 市场技能（find-skills / ppt-generator / multi-search-plus / wps-office-suite）换机通常会自己回来；仓库里仍存了一份作为兜底。
