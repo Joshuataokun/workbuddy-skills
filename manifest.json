@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-24 17:56:14",
+  "synced_at": "2026-10-24 18:59:01",
   "skills_count": 8,
-  "total_bytes": 1639082,
+  "total_bytes": 1640491,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
@@ -42,8 +42,8 @@
       "dir": "prompt-rewrite-guard",
       "source": "local",
       "files": 9,
-      "bytes": 59218,
-      "sha256_of_manifest": "7a3d03506abe9f98"
+      "bytes": 60627,
+      "sha256_of_manifest": "559bbfa6ecb342cb"
     },
     {
       "dir": "tuniu-cli",

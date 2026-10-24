@@ -1,11 +1,11 @@
 ---
 name: prompt-rewrite-guard
-description: "优化、改写、收紧或扩写已有的 prompt / 系统提示词 / SKILL.md / Agent 指令：先冻结原有约束条款，再做最小改动，并用验收用例对比前后通过率。用于「提示词效果不稳定」「帮我把这个 skill 写严一点」「让输出格式固定下来」「这段系统提示词太啰嗦，压缩但不许丢规则」等场景。不用于：从零写文案、写诗写故事、纯翻译、纯代码实现。"
+description: "优化、改写、收紧或压缩已有的提示词 / 系统提示词 / SKILL.md / Agent 指令：先冻结原有约束条款，再做最小改动，最后用验收用例对比改前改后的通过率。使用时机：当用户贴出一段已有的提示词、指令、规则或 SKILL.md 并表达任何修改意图时使用——包括「帮我优化提示词」「这段提示词不生效」「AI 老是不按格式来」「把这个 skill 写严一点」「规则写死」「压缩到七成但不许丢规则」「删掉冗余但别丢要求」「输出不稳定」「这段系统提示词太啰嗦」。即使用户没说「提示词」三个字，只要给的是已有文本并要求改写、加固或精简，也应当使用本技能。触发词：优化提示词、改提示词、重写提示词、收紧提示词、压缩提示词、提示词不生效、提示词不稳定、提示词太啰嗦、输出格式不固定、按格式输出、写严一点、写死规则、删减规则、验收用例、回归对比、按守门员流程、走 prompt-rewrite-guard。不适用：从零创作文案、写诗写故事、纯翻译、纯代码实现——这类任务没有「已有条款」需要保护。"
 display_name: "提示词改写守门员（本地版）"
 display_name_en: "prompt-rewrite-guard (local)"
-description_zh: "优化、改写、收紧或扩写已有的 prompt / 系统提示词 / SKILL.md / Agent 指令：先冻结原有约束条款，再做最小改动，并用验收用例对比前后通过率。用于「提示词效果不稳定」「帮我把这个 skill 写严一点」「让输出格式固定下来」「这段系统提示词太啰嗦，压缩但不许丢规则」等场景。不用于：从零写文案、写诗写故事、纯翻译、纯代码实现。"
-description_en: "Optimize, rewrite, tighten or expand an existing prompt, system prompt, SKILL.md or agent instruction: freeze the original constraints first, then make the smallest authorized change and prove it with a before/after eval pass rate. Use for unstable prompt behavior, tightening a skill's rules, locking an output format, or compressing a verbose system prompt without dropping any requirement. Not for writing copy from scratch, poetry, translation, or code implementation."
-version: 2.0.0
+description_zh: "优化、改写、收紧或压缩已有的提示词 / 系统提示词 / SKILL.md / Agent 指令：先冻结原有约束条款，再做最小改动，最后用验收用例对比改前改后的通过率。使用时机：当用户贴出一段已有的提示词、指令、规则或 SKILL.md 并表达任何修改意图时使用。即使用户没说「提示词」三个字，只要给的是已有文本并要求改写、加固或精简，也应当使用本技能。触发词：优化提示词、改提示词、重写提示词、收紧提示词、压缩提示词、提示词不生效、提示词不稳定、提示词太啰嗦、输出格式不固定、写严一点、写死规则、删减规则、验收用例、回归对比、按守门员流程。不适用：从零创作文案、写诗写故事、纯翻译、纯代码实现。"
+description_en: "Optimize, rewrite, tighten or compress an existing prompt, system prompt, SKILL.md or agent instruction: freeze the original constraints first, make the smallest authorized change, then prove it with a before/after acceptance-case pass rate. Use when the user pastes an existing prompt, instruction set, rule list or SKILL.md and asks to change it in any way - optimize it, make it stricter, lock the output format, compress it without dropping rules, or fix unstable output. Use this even when the user never says the word prompt but clearly supplies existing text to be rewritten, hardened or trimmed. Do not use for writing copy from scratch, fiction or poetry, plain translation, or code implementation - there are no existing constraints to protect."
+version: 2.1.0
 agent_created: true
 ---
 
