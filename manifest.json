@@ -1,89 +1,62 @@
 {
-  "created_at": "2026-10-24 17:23:58",
-  "source_machine": "user-machine",
-  "source_root": "<SKILLS_ROOT>",
+  "synced_at": "2026-10-24 17:56:14",
   "skills_count": 8,
-  "total_bytes": 1639127,
-  "notes": "node_modules / .zip 未打包，恢复时若技能含 package.json 由脚本执行 npm install",
+  "total_bytes": 1639082,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
-      "name": "chinese-punctuation-fixer",
       "source": "local",
       "files": 13,
       "bytes": 168761,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
       "sha256_of_manifest": "d468ac1293dba414"
     },
     {
       "dir": "find-skills-skill__skillhub",
-      "name": "find-skills",
       "source": "skillhub",
       "files": 4,
-      "bytes": 6340,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
+      "bytes": 6325,
       "sha256_of_manifest": "6a456ab419a1dafd"
     },
     {
       "dir": "html-shot",
-      "name": "html-shot",
       "source": "local",
       "files": 12,
       "bytes": 139732,
-      "files_skipped_local_only": 432,
-      "needs_npm": true,
       "sha256_of_manifest": "f9ceae6330d652f3"
     },
     {
       "dir": "multi-search-plus__skillhub",
-      "name": "multi-search-plus",
       "source": "skillhub",
       "files": 21,
-      "bytes": 106324,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
+      "bytes": 106309,
       "sha256_of_manifest": "a685d55b726913cb"
     },
     {
       "dir": "ppt-generator-skill__skillhub",
-      "name": "ppt-generator",
       "source": "skillhub",
       "files": 20,
-      "bytes": 183886,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
+      "bytes": 183871,
       "sha256_of_manifest": "cf6dc641d042334d"
     },
     {
       "dir": "prompt-rewrite-guard",
-      "name": "prompt-rewrite-guard",
       "source": "local",
       "files": 9,
       "bytes": 59218,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
       "sha256_of_manifest": "7a3d03506abe9f98"
     },
     {
       "dir": "tuniu-cli",
-      "name": "tuniu-cli",
       "source": "local",
       "files": 11,
       "bytes": 48497,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
       "sha256_of_manifest": "68db2af6c071f5cc"
     },
     {
       "dir": "wps-office-suite__skillhub",
-      "name": "wps-office-suite",
       "source": "skillhub",
       "files": 58,
       "bytes": 926369,
-      "files_skipped_local_only": 0,
-      "needs_npm": false,
       "sha256_of_manifest": "24af4fbfe0e7766d"
     }
   ]
