@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-24 18:59:01",
+  "synced_at": "2026-10-24 19:00:43",
   "skills_count": 8,
-  "total_bytes": 1640491,
+  "total_bytes": 1643207,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
@@ -41,8 +41,8 @@
     {
       "dir": "prompt-rewrite-guard",
       "source": "local",
-      "files": 9,
-      "bytes": 60627,
+      "files": 10,
+      "bytes": 63343,
       "sha256_of_manifest": "559bbfa6ecb342cb"
     },
     {

@@ -30,7 +30,8 @@ prompt-rewrite-guard/
 │   └── EXAMPLES.md                10 个 before/after 案例
 └── references/
     ├── optimization-workflow.md   账本 / 归因 / 变更 / 回归 / 交付 的表格格式
-    └── eval-cases.md              8 条验收用例（正常·边界·冲突·攻击）
+    ├── eval-cases.md              8 条验收用例（正常·边界·冲突·攻击）
+    └── trigger-tests.md           17 条触发自测（改完描述后人工跑一遍）
 ```
 
 ## 强制关卡（8 步）
