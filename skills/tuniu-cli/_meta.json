@@ -1,0 +1,9 @@
+{
+  "version": "1.1.1",
+  "releasedAt": "2026-10-21T09:49:33.297+08:00",
+  "sha256": "68db2af6c071f5cc0c0a5dc6867a4f31ce79fdddcc6a1ab258c9ed31bcebbed3",
+  "minCliVersion": "1.1.4",
+  "source": "builtin",
+  "installedAt": "2026-10-21T09:49:33.297+08:00",
+  "cliVersion": "1.1.4"
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "ppt-generator-skill",
+  "name": "ppt-generator-skill",
+  "version": "1.0.2",
+  "installedAt": 1791769934671,
+  "source": "skillhub",
+  "namespace": "user_3b34947d",
+  "canonicalName": "@user_3b34947d/ppt-generator-skill",
+  "iconSource": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png",
+  "labels": {
+    "requires_api_key": "false"
+  },
+  "iconLocalPath": "C:\\Users\\Administrator\\.workbuddy\\skills\\ppt-generator-skill__skillhub\\_icon.png",
+  "iconDownloadedFrom": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png"
+}

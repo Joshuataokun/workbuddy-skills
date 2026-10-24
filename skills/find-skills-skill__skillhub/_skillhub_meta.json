@@ -1,0 +1,15 @@
+{
+  "slug": "find-skills-skill",
+  "name": "Find Skills Skill",
+  "version": "1.0.0",
+  "installedAt": 1792493350143,
+  "source": "skillhub",
+  "namespace": "clawhub_fangkelvin",
+  "canonicalName": "@clawhub_fangkelvin/find-skills-skill",
+  "iconSource": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png",
+  "labels": {
+    "requires_api_key": "false"
+  },
+  "iconLocalPath": "C:\\Users\\Administrator\\.workbuddy\\skills\\find-skills-skill__skillhub\\_icon.png",
+  "iconDownloadedFrom": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png"
+}

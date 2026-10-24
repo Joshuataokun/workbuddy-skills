@@ -1,0 +1,18 @@
+{
+  "name": "multi-search-plus",
+  "version": "2.2.0",
+  "description": "Aggregated search across 17 engines (8 CN + 9 global). Includes a runnable Python aggregator (scripts/multi_search.py) for parallel fan-out, dedup, and JSON/Markdown output — LLM can also call web_fetch directly on each engine URL.",
+  "description_zh": "集成 17 个搜索引擎（8 国内 + 9 国际），无需 API Key。包含可直接运行的 Python 聚合脚本（scripts/multi_search.py），支持并行调度、去重、JSON/Markdown 输出。LLM 也可直接用 web_fetch 调各引擎 URL。",
+  "description_en": "Aggregated search across 17 engines (8 CN + 9 global) with zero API keys. Includes a runnable Python aggregator for parallel fan-out and structured output.",
+  "engines": 17,
+  "engines_cn": 8,
+  "engines_global": 9,
+  "requires_api_key": false,
+  "requires_python": ">=3.8",
+  "stdlib_only": true,
+  "scripts": ["multi_search.py", "setup_check.py", "batch_search.py"],
+  "tags": ["knowledge-management", "information-search", "中文优化"],
+  "license": "MIT",
+  "homepage_url": "https://github.com/xue034/multi-search-plus",
+  "documentation_url": "https://github.com/xue034/multi-search-plus/blob/main/SKILL.md"
+}
