@@ -1,7 +1,7 @@
 {
   "created_at": "2026-10-24 17:23:58",
-  "source_machine": "DESKTOP (Administrator)",
-  "source_root": "C:/Users/Administrator/.workbuddy/skills",
+  "source_machine": "user-machine",
+  "source_root": "<SKILLS_ROOT>",
   "skills_count": 8,
   "total_bytes": 1639127,
   "notes": "node_modules / .zip 未打包，恢复时若技能含 package.json 由脚本执行 npm install",

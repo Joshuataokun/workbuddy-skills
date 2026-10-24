@@ -10,6 +10,6 @@
   "labels": {
     "requires_api_key": "false"
   },
-  "iconLocalPath": "C:\\Users\\Administrator\\.workbuddy\\skills\\find-skills-skill__skillhub\\_icon.png",
+  "iconLocalPath": "<SKILLS_ROOT>\find-skills-skill__skillhub\\_icon.png",
   "iconDownloadedFrom": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png"
 }
