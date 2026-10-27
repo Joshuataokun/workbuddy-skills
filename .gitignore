@@ -4,3 +4,4 @@ __pycache__/
 *.zip
 .DS_Store
 _replaced_*/
+_retired/

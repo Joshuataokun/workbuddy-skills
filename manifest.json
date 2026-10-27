@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-24 19:00:43",
-  "skills_count": 8,
-  "total_bytes": 1643207,
+  "synced_at": "2026-10-27 11:30:45",
+  "skills_count": 12,
+  "total_bytes": 1730988,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
@@ -18,6 +18,20 @@
       "sha256_of_manifest": "6a456ab419a1dafd"
     },
     {
+      "dir": "find-skills__skillhub",
+      "source": "skillhub",
+      "files": 5,
+      "bytes": 12268,
+      "sha256_of_manifest": "93279862d76c7c19"
+    },
+    {
+      "dir": "grill-me",
+      "source": "marketplace",
+      "files": 2,
+      "bytes": 3404,
+      "sha256_of_manifest": "743b2a7a1748a34f"
+    },
+    {
       "dir": "html-shot",
       "source": "local",
       "files": 12,
@@ -25,11 +39,25 @@
       "sha256_of_manifest": "f9ceae6330d652f3"
     },
     {
+      "dir": "humanizer",
+      "source": "marketplace",
+      "files": 3,
+      "bytes": 21431,
+      "sha256_of_manifest": "eb2d44bb02d10ec9"
+    },
+    {
       "dir": "multi-search-plus__skillhub",
       "source": "skillhub",
       "files": 21,
       "bytes": 106309,
       "sha256_of_manifest": "a685d55b726913cb"
+    },
+    {
+      "dir": "my-project-card",
+      "source": "local",
+      "files": 3,
+      "bytes": 27214,
+      "sha256_of_manifest": "1a7393b31beb87b8"
     },
     {
       "dir": "ppt-generator-skill__skillhub",
@@ -41,9 +69,9 @@
     {
       "dir": "prompt-rewrite-guard",
       "source": "local",
-      "files": 10,
-      "bytes": 63343,
-      "sha256_of_manifest": "559bbfa6ecb342cb"
+      "files": 11,
+      "bytes": 86807,
+      "sha256_of_manifest": "8384eaaab3e6b17e"
     },
     {
       "dir": "tuniu-cli",

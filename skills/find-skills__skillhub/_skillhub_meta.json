@@ -1,0 +1,15 @@
+{
+  "slug": "find-skills",
+  "name": "技能发现·Find Skills",
+  "version": "1.7.0",
+  "installedAt": 1792918718575,
+  "source": "skillhub",
+  "namespace": "indiv-guipi",
+  "canonicalName": "@indiv-guipi/find-skills",
+  "iconSource": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png",
+  "labels": {
+    "requires_api_key": "false"
+  },
+  "iconLocalPath": "<SKILLS_ROOT>\\find-skills__skillhub\\_icon.png",
+  "iconDownloadedFrom": "https://cloudcache.tencent-cloud.com/qcloud/ui/static/other_external_resource/62f73a9b-1aca-4f8e-921d-6102e258c768.png"
+}
