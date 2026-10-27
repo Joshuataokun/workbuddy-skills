@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-27 11:30:45",
-  "skills_count": 12,
-  "total_bytes": 1730988,
+  "synced_at": "2026-10-27 11:35:32",
+  "skills_count": 11,
+  "total_bytes": 1724663,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
@@ -9,13 +9,6 @@
       "files": 13,
       "bytes": 168761,
       "sha256_of_manifest": "d468ac1293dba414"
-    },
-    {
-      "dir": "find-skills-skill__skillhub",
-      "source": "skillhub",
-      "files": 4,
-      "bytes": 6325,
-      "sha256_of_manifest": "6a456ab419a1dafd"
     },
     {
       "dir": "find-skills__skillhub",

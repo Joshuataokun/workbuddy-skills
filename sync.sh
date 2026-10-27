@@ -2,13 +2,18 @@
 # 把本机技能同步回仓库并推送。
 # 用法： bash sync.sh "本次改了什么"
 #        DRY_RUN=1 bash sync.sh      只看会同步哪些文件，不提交不推送
+#        PRUNE=0 bash sync.sh        不清理仓库里本机已没有的技能目录
 #        SRC=/自定义/技能目录 bash sync.sh
+#
+# 默认镜像同步：仓库 skills/ 是本机的精确镜像，本机删了就跟着删。
+# 想留孤儿目录时用 PRUNE=0，或把目录挪到 skills/ 之外（如 _retired/，已 gitignore）。
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 SRC="${SRC:-$HOME/.workbuddy/skills}"
 MSG="${1:-chore: 同步本机技能 $(date +%Y-%m-%d\ %H:%M)}"
 DRY="${DRY_RUN:-0}"
+PRUNE="${PRUNE:-1}"
 
 echo "=== 同步本机技能 → 仓库 ==="
 echo "来源: $SRC"
@@ -33,6 +38,33 @@ for d in "$SRC"/*/; do
   echo "  已同步: $name"
   n=$((n+1))
 done
+
+# 镜像清理：仓库里有、本机已经没有的技能目录
+if [ "$n" -eq 0 ]; then
+  echo "❌ 本机一个技能都没扫到，疑似 SRC 指错了。已中止，避免把仓库清空。"
+  exit 1
+fi
+if [ "$PRUNE" = "1" ]; then
+  echo
+  echo "--- 清理仓库侧孤儿（仓库有、本机无）---"
+  p=0
+  for d in skills/*/; do
+    [ -d "$d" ] || continue
+    name="$(basename "$d")"
+    if [ -f "$SRC/$name/SKILL.md" ]; then
+      continue
+    fi
+    rm -rf "skills/$name"
+    echo "  已清理: $name"
+    p=$((p+1))
+  done
+  if [ "$p" -eq 0 ]; then
+    echo "  无，仓库与本机一致"
+  fi
+else
+  echo
+  echo "跳过孤儿清理（PRUNE=0）"
+fi
 
 # 重新生成 manifest.json（有 python 才做）
 PY=""
