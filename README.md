@@ -28,9 +28,12 @@ bash restore.sh          # 加 DRY_RUN=1 可先演练
 ```bash
 bash sync.sh "说明这次改了什么"
 DRY_RUN=1 bash sync.sh "先看看会改什么"    # 演练，不提交不推送
+PRUNE=0 bash sync.sh "保留孤儿目录"        # 不删仓库里本机已没有的技能
 ```
 
-`sync.sh` 做四件事：从 `~/.workbuddy/skills` 重新导出 → **自动脱敏**（绝对路径换成 `<SKILLS_ROOT>`）→ 重建 `manifest.json` → 提交并推送。
+`sync.sh` 做五件事：从 `~/.workbuddy/skills` 重新导出 → **自动脱敏**（绝对路径换成 `<SKILLS_ROOT>`）→ **清理仓库孤儿**（仓库里有、本机已经没有的技能目录，默认开，`PRUNE=0` 关）→ 重建 `manifest.json` → 提交并推送。
+
+**镜像语义**：仓库 `skills/` 是本机技能的精确镜像，本机删了仓库就跟着删。需要长期留档但不在本机的东西（如退役的第三方技能），放到 `skills/` 之外的目录（参考 `_retired/`，已 gitignore）。扫到 0 个技能时脚本会中止，防止误清空仓库。
 
 ## 为什么不用 WorkBuddy 账号同步
 
