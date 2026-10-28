@@ -22,6 +22,7 @@ import os
 import re
 import statistics
 import sys
+import unicodedata
 
 # ----------------------------------------------------------------- 阈值常量
 MIN_WORDS = 120          # 低于此字数，结论降为「样本不足」
@@ -164,6 +165,39 @@ RE_PLACEHOLDER = re.compile(
     r"(?<![A-Za-z0-9])X{2,}(?![A-Za-z0-9])|TBD|TODO"
 )
 RE_STRAIGHT_QUOTE_IN_CN = re.compile(r'"[^"\n]{1,60}"')
+
+# --- 标点与空白：AI 输出中文时最容易露馅的地方（编号 E8–E12）
+# 只判「汉字与半角标点相邻」：数字 3.5、英文 foo(x, y)、URL 里的 ?q=1 都不碰。
+RE_HALF_PUNCT = re.compile(
+    r"[\u4e00-\u9fff][ \t]*[,;:!?][ \t]*[\u4e00-\u9fff]"
+    r"|[\u4e00-\u9fff][ \t]*\.[ \t]*[\u4e00-\u9fff]"
+    # 句末半角句号：前面至少两个字符（汉字/数字/百分号），排除「1.」这类列表编号
+    r"|[\u4e00-\u9fff0-9%）]{2,}\.(?=\s|$)"
+)
+# 省略号该是「……」（两个六点），不是 ... 或 。。。
+RE_ELLIPSIS_BAD = re.compile(
+    r"[\u4e00-\u9fff][ \t]*\.{2,}[ \t]*[\u4e00-\u9fff]"
+    r"|[\u4e00-\u9fff][ \t]*\.{2,}"
+    r"|[\u4e00-\u9fff][ \t]*。{2,}"
+)
+# 破折号该是「——」（两个 em dash），不是 --、单个 —、或 en dash
+RE_DASH_BAD = re.compile(
+    r"[\u4e00-\u9fff][ \t]*(?:-{2,}|–)[ \t]*[\u4e00-\u9fff]"
+    r"|(?:^|[^\u4e00-\u9fff])[ \t]*-{2,}[ \t]*[\u4e00-\u9fff]"
+    r"|[\u4e00-\u9fff][ \t]*—(?!—)[ \t]*[\u4e00-\u9fff]"
+)
+# 中文字与字之间夹空格。「图 1」「表 2」两侧是数字，不命中。
+RE_CJK_SPACE = re.compile(r"[\u4e00-\u9fff][ \t]{1,3}[\u4e00-\u9fff]")
+# 全角标点前后不该有半角空格。全角标点自带视觉宽度。
+_FW = "，。、；：？！（）【】《》"
+RE_SPACE_AROUND_FW = re.compile(
+    r"(?<=[^\s])[ \t]+(?=[" + _FW + r"])|(?<=[" + _FW + r"])[ \t]+(?=[^\s])"
+)
+# 不可见字符与非常用空白：NBSP、零宽、BOM、词连接符；句中的全角空格
+RE_WEIRD_CHAR = re.compile(
+    r"[\u00a0\u1680\u2000-\u200d\u202f\u205f\ufeff\u2060]"
+    r"|[\u4e00-\u9fff]\u3000[\u4e00-\u9fff]"
+)
 RE_TITLE_SLOGAN = re.compile(
     r"以[^，。\n]{1,6}促[^，。\n]{1,6}|"
     r"[^，。\n]{1,8}为[^，。\n]{1,6}[，,][^，。\n]{1,8}为[^，。\n]{1,6}|"
@@ -196,10 +230,24 @@ def cv(values: list) -> float | None:
     return statistics.pstdev(values) / mean
 
 
+def _visible(s: str) -> str:
+    """不可见字符转成 <U+XXXX>，否则报告里看起来是空白，等于没报。"""
+    out = []
+    for c in s:
+        cat = unicodedata.category(c)
+        if cat in ("Cf", "Zs", "Zl", "Zp") and c != " ":
+            out.append(f"<U+{ord(c):04X}>")
+        elif c == "\t":
+            out.append("<TAB>")
+        else:
+            out.append(c)
+    return "".join(out)
+
+
 def samples(text: str, pattern, k: int = MAX_SAMPLES) -> list:
     out = []
     for m in pattern.finditer(text):
-        frag = m.group(0).strip().strip("。！？；，、\n 　")
+        frag = _visible(m.group(0).strip().strip("。！？；，、\n 　"))
         if frag and frag not in out:
             out.append(frag)
         if len(out) >= k:
@@ -245,10 +293,19 @@ RULES = [
     ("E5", "E", "知识截止声明", RE_CUTOFF, True),
     ("E6", "E", "占位符未填", RE_PLACEHOLDER, True),
     ("E7", "E", "中文里用英文直引号", RE_STRAIGHT_QUOTE_IN_CN, False),
+    ("E8", "E", "半角标点混入中文", RE_HALF_PUNCT, False),
+    ("E9", "E", "省略号/破折号形式错", RE_ELLIPSIS_BAD, False),
+    ("E9b", "E", "破折号写成 --/单 —", RE_DASH_BAD, False),
+    ("E10", "E", "中文字间夹空格", RE_CJK_SPACE, False),
+    ("E11", "E", "全角标点前后加空格", RE_SPACE_AROUND_FW, False),
+    ("E12", "E", "不可见字符/异常空白", RE_WEIRD_CHAR, False),
 ]
 
+# 标点与空白类：不改内容，属于「硬伤」，命中就要改，但不单独拉高总分
+PUNCT_FIX = {"E8", "E9", "E9b", "E10", "E11", "E12"}
+
 DECISIVE = {rid for rid, _, _, _, d in RULES if d}
-STRONG = {"A1", "A4", "B1", "B4", "C1"}
+STRONG = {"A1", "A4", "B1", "B4", "C1", "E8", "E9", "E10"}
 
 
 def scan_text(text: str) -> dict:
@@ -305,7 +362,23 @@ def score_text(text: str, found: dict) -> dict:
     rate = vocab_count / eff * 1000
     vocab_term = min(VOCAB_CAP, max(0.0, rate - VOCAB_FLOOR) * 0.45)
 
-    score = round(min(100.0, content_term + rhythm_term + vocab_term))
+    # 标点与空白单独加权：同属 E 族，族去重会把密集的标点错误压成一个数。
+    # 单处半角标点不该把整篇推到「明显」，三处以上才是系统性粘贴痕迹。
+    pun = {rid: found[rid]["次数"] for rid in PUNCT_FIX if rid in found}
+    punct_term = 0.0
+    if pun.get("E8", 0) >= 3:
+        punct_term += 15.0
+    elif pun.get("E8", 0) >= 1:
+        punct_term += 5.0
+    if "E9" in pun or "E9b" in pun:
+        punct_term += 8.0
+    if "E10" in pun:
+        punct_term += 8.0
+    if "E11" in pun or "E12" in pun:
+        punct_term += 4.0
+    punct_term = min(25.0, punct_term)
+
+    score = round(min(100.0, content_term + rhythm_term + vocab_term + punct_term))
 
     decisive_hits = {r for r in found if r in DECISIVE}
     fams = {v["族"] for v in found.values()}
@@ -614,6 +687,14 @@ def read_input(path: str) -> str:
 
 
 # =============================================================== 输出
+def _rid_key(rid: str) -> tuple:
+    """规则编号自然排序：E2 < E9 < E10，而不是字符串序的 E10 < E2。"""
+    m = re.match(r"([A-Za-z]+)(\d+)([a-z]?)", rid)
+    if not m:
+        return (rid, 0, "")
+    return (m.group(1), int(m.group(2)), m.group(3))
+
+
 def report(path: str, result: dict, ppt: dict | None) -> str:
     lines = []
     lines.append(f"文件: {path}")
@@ -626,9 +707,14 @@ def report(path: str, result: dict, ppt: dict | None) -> str:
     )
     if result["patterns"]:
         lines.append("\n命中模式:")
-        for rid, info in sorted(result["patterns"].items()):
+        for rid, info in sorted(result["patterns"].items(), key=lambda kv: _rid_key(kv[0])):
             ex = "、".join(info["样例"])[:60]
-            lines.append(f"  [{rid}] {info['名称']} ×{info['次数']}  例：{ex}")
+            tag = " [必修·只改字符]" if rid in PUNCT_FIX else ""
+            lines.append(f"  [{rid}] {info['名称']} ×{info['次数']}{tag}  例：{ex}")
+        if PUNCT_FIX & set(result["patterns"]):
+            lines.append(
+                "  注：标「必修」的几条只涉及字符形式，改它不动任何字词和判断。"
+            )
     else:
         lines.append("\n未命中任何模式。")
     if ppt:

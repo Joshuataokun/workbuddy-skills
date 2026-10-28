@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-27 17:31:11",
-  "skills_count": 12,
-  "total_bytes": 1798800,
+  "synced_at": "2026-10-28 09:34:04",
+  "skills_count": 11,
+  "total_bytes": 1786698,
   "skills": [
     {
       "dir": "chinese-punctuation-fixer",
@@ -14,8 +14,8 @@
       "dir": "de-ai-flavor",
       "source": "local",
       "files": 6,
-      "bytes": 74137,
-      "sha256_of_manifest": "251788725f94f871"
+      "bytes": 83466,
+      "sha256_of_manifest": "98c83ae7795bf533"
     },
     {
       "dir": "find-skills__skillhub",
@@ -37,13 +37,6 @@
       "files": 12,
       "bytes": 139732,
       "sha256_of_manifest": "f9ceae6330d652f3"
-    },
-    {
-      "dir": "humanizer",
-      "source": "marketplace",
-      "files": 3,
-      "bytes": 21431,
-      "sha256_of_manifest": "eb2d44bb02d10ec9"
     },
     {
       "dir": "multi-search-plus__skillhub",
