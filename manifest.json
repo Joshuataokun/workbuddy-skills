@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-29 09:54:51",
-  "skills_count": 12,
-  "total_bytes": 2259484,
+  "synced_at": "2026-10-29 10:36:30",
+  "skills_count": 13,
+  "total_bytes": 2266945,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -79,6 +79,13 @@
       "files": 11,
       "bytes": 48497,
       "sha256_of_manifest": "68db2af6c071f5cc"
+    },
+    {
+      "dir": "workspace-converge",
+      "source": "local",
+      "files": 1,
+      "bytes": 7461,
+      "sha256_of_manifest": "587c964391917528"
     },
     {
       "dir": "wps-office-suite__skillhub",
