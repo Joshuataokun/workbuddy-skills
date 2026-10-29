@@ -5,7 +5,7 @@ display_name_en: Workspace Converge
 description: 任务收尾与空间收敛。任务交完自动做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照→清单待确认→压 MEMORY≤3000＋令牌/路径/推测标记/字符/行数五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的完整规程。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
 description_zh: 任务收尾与空间收敛。任务交完自动做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照→清单待确认→压 MEMORY≤3000＋令牌/路径/推测标记/字符/行数五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的完整规程。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
 description_en: Task wrap-up and workspace convergence. Tier A runs automatically after each task. Tier B runs on "converge <workspace>" / "compress memory" / "trim scripts" → snapshot, checklist for approval, compress MEMORY.md under 3000 chars with a five-way verification (tokens, paths, hedge markers, char count, line count), archive old logs and draft scripts, write a convergence record. Guardrails against wrongful deletion, memory contamination, stale paths, and hedged guesses hardening into facts.
-version: 1.2.0
+version: 1.3.0
 author: Joshuataokun
 tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌比对,防误删,防污染
 ---
@@ -54,8 +54,11 @@ B 档·空间收敛（用户说「收敛」）：先量 → 快照 → 清单待
 11. 蒸日志：旧日志提炼要点写回 MEMORY 或单独索引；原文件移 `.workbuddy/archive/memory-日期/`，**不许删**
     **必须建 `归档索引.md`**：每份一行，写清字符数、里面有什么、怎么搬回——不建索引等于把东西藏起来
     「旧」的定义：当天日志不动、含未决事项（待确认/待办）的不动，其余才算旧
-12. 清脚本：有 argparse 且代码无写死盘符路径 = 保留；写死盘符或无参数只能跑一次 = 移 `_archive/日期/`
-    归档前查两处引用：① 各空间 MEMORY.md ② 自动化任务 prompt——有引用先改引用再归档，没查不许动
+12. 清脚本，**两层判据缺一不可，不过的 → 移 `_archive/日期/`**：
+    - 技术层：盘符在**模块级常量**（改一行即可复用）→ 可留；散在**函数逻辑**里（只能跑一次）→ 归档。用 AST 遍历判断，别用朴素正则——`http://` 的 `//` 会被误判成盘符
+    - 业务层：**产物还活着吗**。产物已删、或已被别的方案取代 → 归档，哪怕技术上一行就能复用
+    - 两层都过才留。**2026-10-29 实测 12 个脚本：技术层全过（都是模块级常量），业务层 6 个产物已死**（随身包、仓库初始化、一次性脱敏）→ 只留 6 个。旧判据"有无 argparse"对这批工具完全失效，12 个都没 argparse
+    - 归档前查两处引用：① 各空间 MEMORY.md ② 自动化任务 prompt——有引用先改引用再归档，没查不许动
 13. **搬家后复验**：第 11、12 步移动了文件，可能产生新的断链。
     重跑 `tokens.py` ＋路径 exists 检查，重点看 MEMORY.md 里指向被移动文件的引用
 14. 删「已排除方案 / 否决记录」时，**否决原因必须跟着保留**（写进收敛记录）——只删结论不删原因，下次同样条件会把同样被否的方案再想一遍
@@ -91,3 +94,4 @@ B 档·空间收敛（用户说「收敛」）：先量 → 快照 → 清单待
 - 不采用：letta/cognee 类向量库方案（要服务、要 key、不可人读）
 - 2026-10-29 由空间文件上移为技能：方法随仓库走（sync.sh / restore.sh），触发词双保险（技能 description + 用户级记忆）
 - 2026-10-29 下午复盘（v1.2.0）：① 压缩没有算法、只有判断，须写清"凭什么删"→ 第 9 条补"副本只留指针"；② 实测 2936 字符却 71 行、memcheck 仍报绿 → 第 10 条加行数核验，四项改五项；③ 把博客二手数据当一手（称 91.8k★，实测 97,009★）→ 第 2 条加来源层级与时点；④ 只保证"一条没丢"用户无法验证 → 第 21 条要求处置表
+- 2026-10-29 傍晚（v1.3.0）：第 12 条旧判据"有 argparse 且无写死盘符"实测全盘失效——12 个脚本全无 argparse、全有盘符，按字面连天天在用的 `verify_sync.py` 都该归档。改为**技术层（模块级常量 vs 函数内）+ 业务层（产物是否还活着）**两层判据
