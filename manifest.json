@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-29 11:40:41",
-  "skills_count": 13,
-  "total_bytes": 2273717,
+  "synced_at": "2026-10-29 15:13:12",
+  "skills_count": 12,
+  "total_bytes": 2168739,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -46,13 +46,6 @@
       "sha256_of_manifest": "f9ceae6330d652f3"
     },
     {
-      "dir": "multi-search-plus__skillhub",
-      "source": "skillhub",
-      "files": 21,
-      "bytes": 106309,
-      "sha256_of_manifest": "a685d55b726913cb"
-    },
-    {
       "dir": "my-project-card",
       "source": "local",
       "files": 3,
@@ -84,8 +77,8 @@
       "dir": "workspace-converge",
       "source": "local",
       "files": 2,
-      "bytes": 14177,
-      "sha256_of_manifest": "7777f78f6711ac72"
+      "bytes": 15508,
+      "sha256_of_manifest": "c6963fa3ea7bddae"
     },
     {
       "dir": "wps-office-suite__skillhub",
