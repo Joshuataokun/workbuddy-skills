@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-29 11:23:44",
+  "synced_at": "2026-10-29 11:40:41",
   "skills_count": 13,
-  "total_bytes": 2273661,
+  "total_bytes": 2273717,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -21,8 +21,8 @@
       "dir": "de-ai-flavor",
       "source": "local",
       "files": 6,
-      "bytes": 83466,
-      "sha256_of_manifest": "98c83ae7795bf533"
+      "bytes": 83522,
+      "sha256_of_manifest": "afb1971f1ced1281"
     },
     {
       "dir": "find-skills__skillhub",
