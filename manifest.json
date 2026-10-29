@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-29 15:13:12",
-  "skills_count": 12,
-  "total_bytes": 2168739,
+  "synced_at": "2026-10-29 16:48:19",
+  "skills_count": 10,
+  "total_bytes": 1238966,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -30,13 +30,6 @@
       "files": 5,
       "bytes": 12268,
       "sha256_of_manifest": "93279862d76c7c19"
-    },
-    {
-      "dir": "grill-me",
-      "source": "marketplace",
-      "files": 2,
-      "bytes": 3404,
-      "sha256_of_manifest": "743b2a7a1748a34f"
     },
     {
       "dir": "html-shot",
@@ -79,13 +72,6 @@
       "files": 2,
       "bytes": 15508,
       "sha256_of_manifest": "c6963fa3ea7bddae"
-    },
-    {
-      "dir": "wps-office-suite__skillhub",
-      "source": "skillhub",
-      "files": 58,
-      "bytes": 926369,
-      "sha256_of_manifest": "24af4fbfe0e7766d"
     }
   ]
 }
