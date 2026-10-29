@@ -1,0 +1,229 @@
+{
+  "_schema": "CleanSight v6.1 app signature database",
+  "_description": "已知应用程序的缓存/数据路径签名。每个条目定义扫描时检测什么、在哪、能否清理/迁移。欢迎社区贡献 PR 添加新软件！",
+  "_usage": "扫描脚本自动读取此文件,检测电脑上存在哪些已知应用。用户可通过 user-custom.json 扩展自己的软件。",
+
+  "categories": {
+    "_order": ["dev_tools", "ides", "browsers", "im_apps", "office", "input_methods", "security", "virtualization", "games", "media", "cloud_storage", "rogue_software", "ai_tools", "system"],
+
+    "dev_tools": {
+      "description": "开发工具类 - 包管理器、构建工具的缓存和数据",
+      "apps": [
+        { "name": "npm", "detect_paths": ["%LOCALAPPDATA%\\npm-cache"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "npm_config_cache", "migration_value_template": "{TARGET_DRIVE}\\dev-cache\\npm", "clean_cmd": "npm cache clean --force" },
+        { "name": "node-gyp", "detect_paths": ["%LOCALAPPDATA%\\node-gyp\\Cache"], "cleanable": true, "migratable": true, "migration_method": "symlink" },
+        { "name": "pip", "detect_paths": ["%LOCALAPPDATA%\\pip\\cache"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "PIP_CACHE_DIR", "clean_cmd": "pip cache purge" },
+        { "name": "Yarn", "detect_paths": ["%LOCALAPPDATA%\\Yarn\\Cache"], "cleanable": true, "migratable": true, "migration_method": "yarn_config", "migration_key": "cacheFolder", "clean_cmd": "yarn cache clean" },
+        { "name": "pnpm", "detect_paths": ["%LOCALAPPDATA%\\pnpm\\store", "%LOCALAPPDATA%\\pnpm\\content-v2"], "cleanable": true, "migratable": true, "migration_method": "pnpm_config", "migration_key": "store-dir", "clean_cmd": "pnpm store prune" },
+        { "name": "NuGet", "detect_paths": ["%USERPROFILE%\\.nuget\\packages"], "cleanable": "cautious", "migratable": true, "migration_method": "config_file", "migration_key": "NuGet.Config:globalPackagesFolder", "note": "删除后VS打开方案会重新下载" },
+        { "name": "Cargo", "detect_paths": ["%USERPROFILE%\\.cargo\\registry", "%USERPROFILE%\\.cargo\\git"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "CARGO_HOME", "clean_cmd": "cargo cache --autoclean" },
+        { "name": "Maven", "detect_paths": ["%USERPROFILE%\\.m2\\repository"], "cleanable": "cautious", "migratable": true, "migration_method": "config_file", "migration_key": "settings.xml:localRepository", "note": "删除后构建时重新下载" },
+        { "name": "Gradle", "detect_paths": ["%USERPROFILE%\\.gradle\\caches"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "GRADLE_USER_HOME", "clean_cmd": "gradle cleanBuildCache" },
+        { "name": "conda", "detect_paths": ["%USERPROFILE%\\miniconda3\\pkgs", "%USERPROFILE%\\anaconda3\\pkgs", "%LOCALAPPDATA%\\conda\\pkgs"], "cleanable": true, "migratable": false, "clean_cmd": "conda clean --all" },
+        { "name": "Go modules", "detect_paths": ["%USERPROFILE%\\go\\pkg\\mod"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "GOMODCACHE", "clean_cmd": "go clean -modcache" },
+        { "name": "npx", "detect_paths": ["%LOCALAPPDATA%\\npm-cache\\_npx"], "cleanable": true, "migratable": false },
+        { "name": "Android SDK", "detect_paths": ["%LOCALAPPDATA%\\Android\\Sdk"], "cleanable": false, "migratable": true, "migration_method": "env_var", "migration_key": "ANDROID_HOME" },
+        { "name": "Unity", "detect_paths": ["%LOCALAPPDATA%\\Unity\\cache", "%USERPROFILE%\\AppData\\LocalLow\\Unity"], "cleanable": true, "migratable": false },
+        { "name": "Haskell Stack", "detect_paths": ["%APPDATA%\\stack"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "STACK_ROOT" },
+        { "name": "Ruby gems", "detect_paths": ["%USERPROFILE%\\.gem"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "GEM_HOME" }
+      ]
+    },
+
+    "ides": {
+      "description": "IDE 和编辑器 - 索引缓存、插件数据",
+      "apps": [
+        { "name": "VS Code", "detect_paths": ["%APPDATA%\\Code"], "cleanable": true, "sub_cleanable": "Cache, CachedData, Code Cache, GPUCache", "sub_paths": ["Cache", "CachedData", "Code Cache", "GPUCache"] },
+        { "name": "VS Code Insiders", "detect_paths": ["%APPDATA%\\Code - Insiders"], "cleanable": true, "sub_cleanable": "Cache", "sub_paths": ["Cache"] },
+        { "name": "Visual Studio", "detect_paths": ["%LOCALAPPDATA%\\Microsoft\\VisualStudio"], "cleanable": "cautious", "sub_cleanable": "旧版本缓存" },
+        { "name": "JetBrains全家桶", "detect_paths": ["%LOCALAPPDATA%\\JetBrains", "%APPDATA%\\JetBrains"], "cleanable": "cautious", "sub_cleanable": "旧版本IDE数据", "migratable": true },
+        { "name": "IntelliJ IDEA", "detect_paths": ["%APPDATA%\\JetBrains\\IntelliJIdea*"], "cleanable": "cautious", "migratable": true },
+        { "name": "PyCharm", "detect_paths": ["%APPDATA%\\JetBrains\\PyCharm*"], "cleanable": "cautious", "migratable": true },
+        { "name": "WebStorm", "detect_paths": ["%APPDATA%\\JetBrains\\WebStorm*"], "cleanable": "cautious", "migratable": true },
+        { "name": "Eclipse", "detect_paths": ["%USERPROFILE%\\.eclipse"], "cleanable": "cautious" },
+        { "name": "Android Studio", "detect_paths": ["%APPDATA%\\Google\\AndroidStudio*"], "cleanable": "cautious", "migratable": true },
+        { "name": "Sublime Text", "detect_paths": ["%APPDATA%\\Sublime Text\\Cache"], "cleanable": true },
+        { "name": "Notepad++", "detect_paths": ["%APPDATA%\\Notepad++\\backup"], "cleanable": true },
+        { "name": "Cursor", "detect_paths": ["%APPDATA%\\Cursor", "%LOCALAPPDATA%\\Cursor"], "cleanable": true, "sub_cleanable": "Cache, Code Cache, GPUCache", "migratable": true }
+      ]
+    },
+
+    "browsers": {
+      "description": "浏览器 - 缓存、历史、Cookie",
+      "apps": [
+        { "name": "Chrome", "detect_paths": ["%LOCALAPPDATA%\\Google\\Chrome\\User Data"], "cleanable": true, "sub_paths": ["Default\\Cache", "Default\\Code Cache", "Default\\GPUCache", "Default\\Service Worker"], "sub_cleanable": "Cache, Code Cache, GPUCache, Service Worker" },
+        { "name": "Edge", "detect_paths": ["%LOCALAPPDATA%\\Microsoft\\Edge\\User Data"], "cleanable": true, "sub_paths": ["Default\\Cache", "Default\\Code Cache", "Default\\GPUCache"], "sub_cleanable": "Cache, Code Cache, GPUCache" },
+        { "name": "Firefox", "detect_paths": ["%APPDATA%\\Mozilla\\Firefox\\Profiles", "%LOCALAPPDATA%\\Mozilla\\Firefox\\Profiles"], "cleanable": true, "sub_paths": ["cache2", "OfflineCache"], "sub_cleanable": "cache2, OfflineCache" },
+        { "name": "Brave", "detect_paths": ["%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\User Data"], "cleanable": true, "sub_cleanable": "Cache" },
+        { "name": "Opera", "detect_paths": ["%LOCALAPPDATA%\\Opera Software\\Opera Stable"], "cleanable": true, "sub_cleanable": "Cache" },
+        { "name": "360浏览器", "detect_paths": ["%APPDATA%\\360se6", "%LOCALAPPDATA%\\360Chrome\\Chrome"], "cleanable": true, "note": "注意检查捆绑软件" },
+        { "name": "QQ浏览器", "detect_paths": ["%APPDATA%\\Tencent\\QQBrowser", "%LOCALAPPDATA%\\Tencent\\QQBrowser"], "cleanable": true },
+        { "name": "搜狗浏览器", "detect_paths": ["%APPDATA%\\SogouExplorer"], "cleanable": true },
+        { "name": "Vivaldi", "detect_paths": ["%LOCALAPPDATA%\\Vivaldi\\User Data"], "cleanable": true, "sub_cleanable": "Cache, Code Cache" },
+        { "name": "Yandex Browser", "detect_paths": ["%LOCALAPPDATA%\\Yandex\\YandexBrowser\\User Data"], "cleanable": true }
+      ]
+    },
+
+    "im_apps": {
+      "description": "即时通讯 - 聊天记录、日志、文件缓存",
+      "apps": [
+        { "name": "微信", "detect_paths": ["%USERPROFILE%\\Documents\\WeChat Files", "%APPDATA%\\Tencent\\xwechat"], "cleanable": "cautious", "sub_cleanable": "log, cache, FileStorage\\Video, FileStorage\\Image", "do_not_touch": "聊天记录" },
+        { "name": "QQ", "detect_paths": ["%USERPROFILE%\\Documents\\Tencent Files", "%APPDATA%\\Tencent\\QQ\\nt_qq"], "cleanable": "cautious", "sub_cleanable": "Image, Video, log", "do_not_touch": "聊天记录" },
+        { "name": "Tim", "detect_paths": ["%USERPROFILE%\\Documents\\Tencent Files"], "cleanable": "cautious" },
+        { "name": "钉钉", "detect_paths": ["%APPDATA%\\DingTalk", "%APPDATA%\\dinglive"], "cleanable": "cautious", "sub_cleanable": "log, cache", "do_not_touch": "聊天记录" },
+        { "name": "飞书", "detect_paths": ["%APPDATA%\\LarkShell", "%LOCALAPPDATA%\\LarkShell"], "cleanable": true, "sub_cleanable": "ShaderCache, GrShaderCache, GPUCache, cache" },
+        { "name": "企业微信", "detect_paths": ["%APPDATA%\\Tencent\\WXWork"], "cleanable": "cautious", "do_not_touch": "聊天记录" },
+        { "name": "Slack", "detect_paths": ["%APPDATA%\\Slack"], "cleanable": true, "sub_cleanable": "Cache, GPUCache" },
+        { "name": "Teams", "detect_paths": ["%APPDATA%\\Microsoft\\Teams"], "cleanable": true, "sub_cleanable": "Cache, GPUCache" },
+        { "name": "Telegram", "detect_paths": ["%APPDATA%\\Telegram Desktop"], "cleanable": true, "sub_cleanable": "cache" },
+        { "name": "Discord", "detect_paths": ["%APPDATA%\\discord"], "cleanable": true, "sub_cleanable": "Cache" }
+      ]
+    },
+
+    "office": {
+      "description": "办公软件 - WPS/Office/Adobe等",
+      "apps": [
+        { "name": "WPS Office", "detect_paths": ["%APPDATA%\\kingsoft\\office6", "%APPDATA%\\kingsoft\\wps"], "cleanable": "cautious", "sub_cleanable": "cache, log" },
+        { "name": "Microsoft Office", "detect_paths": ["%LOCALAPPDATA%\\Microsoft\\Office"], "cleanable": true, "sub_cleanable": "OfficeFileCache" },
+        { "name": "Adobe Acrobat", "detect_paths": ["%APPDATA%\\Adobe\\Acrobat"], "cleanable": true },
+        { "name": "Adobe Creative Cloud", "detect_paths": ["%LOCALAPPDATA%\\Adobe"], "cleanable": "cautious", "note": "可能含正版授权信息" },
+        { "name": "搜狗PDF", "detect_paths": ["%LOCALAPPDATA%\\sogoupdf"], "cleanable": true, "note": "可考虑卸载换用更轻量的PDF阅读器" },
+        { "name": "福昕PDF", "detect_paths": ["%APPDATA%\\Foxit Software"], "cleanable": true },
+        { "name": "LibreOffice", "detect_paths": ["%APPDATA%\\LibreOffice"], "cleanable": true }
+      ]
+    },
+
+    "input_methods": {
+      "description": "输入法 - 语言模型、词库、皮肤缓存",
+      "apps": [
+        { "name": "搜狗输入法", "detect_paths": ["%PROGRAMFILES(X86)%\\SogouInput", "%PROGRAMDATA%\\SogouInput", "%APPDATA%\\SogouPy", "%LOCALAPPDATA%\\SogouPY"], "cleanable": "cautious", "sub_cleanable": "SGCefCache, ceftmp, 皮肤缓存", "do_not_touch": "语言模型.bin, 词库" },
+        { "name": "微软拼音", "detect_paths": ["%APPDATA%\\Microsoft\\InputMethod\\Chs"], "cleanable": true, "sub_cleanable": "cache" },
+        { "name": "百度输入法", "detect_paths": ["%PROGRAMDATA%\\Baidu\\BaiduPinyin", "%APPDATA%\\Baidu\\BaiduPinyin"], "cleanable": "cautious" },
+        { "name": "手心输入法", "detect_paths": ["%PROGRAMFILES(X86)%\\ShouxinInput", "%APPDATA%\\Shouxin"], "cleanable": "cautious" },
+        { "name": "QQ输入法", "detect_paths": ["%PROGRAMFILES(X86)%\\Tencent\\QQPinyin"], "cleanable": "cautious" },
+        { "name": "讯飞输入法", "detect_paths": ["%APPDATA%\\iflytek\\iflyime"], "cleanable": "cautious" }
+      ]
+    },
+
+    "security": {
+      "description": "安全软件 - 病毒库、日志、隔离区",
+      "apps": [
+        { "name": "火绒安全", "detect_paths": ["%PROGRAMDATA%\\Huorong"], "cleanable": false, "note": "病毒库难免膨胀，不建议动" },
+        { "name": "360安全卫士", "detect_paths": ["%PROGRAMFILES(X86)%\\360"], "cleanable": "cautious", "note": "可清理日志缓存，勿删引擎文件。如不用建议直接卸载" },
+        { "name": "腾讯电脑管家", "detect_paths": ["%PROGRAMFILES(X86)%\\Tencent\\QQPCMgr"], "cleanable": "cautious", "note": "可清理日志，如不用建议卸载" },
+        { "name": "金山毒霸", "detect_paths": ["%PROGRAMFILES(X86)%\\kingsoft\\kingsoft antivirus"], "cleanable": "cautious", "note": "可清理日志" },
+        { "name": "Windows Defender", "detect_paths": ["%PROGRAMDATA%\\Microsoft\\Windows Defender\\Support", "%PROGRAMDATA%\\Microsoft\\Windows Defender\\Scans"], "cleanable": "cautious", "sub_cleanable": "旧扫描日志", "note": "可清理旧日志，不可删引擎文件" },
+        { "name": "深信服EDR", "detect_paths": ["%PROGRAMDATA%\\SF\\EDR"], "cleanable": false, "enterprise": true, "note": "企业管控软件，不可删除" },
+        { "name": "深信服NAC", "detect_paths": ["%PROGRAMDATA%\\NAC"], "cleanable": false, "enterprise": true, "note": "企业准入控制，不可删除" },
+        { "name": "深信服Ingress", "detect_paths": ["%PROGRAMDATA%\\Ingress", "%PROGRAMFILES%\\Sangfor"], "cleanable": "cautious", "enterprise": true, "sub_cleanable": "temp, 日志", "note": "企业网关客户端，可清理临时文件和日志" },
+        { "name": "KvEdr", "detect_paths": ["%PROGRAMDATA%\\KvEdr"], "cleanable": false, "enterprise": true, "note": "企业管控软件，不可删除" },
+        { "name": "SecurityCore审计日志", "detect_paths": ["%PROGRAMDATA%\\SecurityCore"], "cleanable": "cautious", "sub_cleanable": "30天前的*.log", "note": "程序行为审计日志，旧日志可清理" },
+        { "name": "SecurityEv事件日志", "detect_paths": ["%PROGRAMDATA%\\SecurityEv"], "cleanable": "cautious", "sub_cleanable": "30天前的*.log", "note": "程序事件日志，旧日志可清理" },
+        { "name": "卡巴斯基", "detect_paths": ["%PROGRAMDATA%\\KasperskyLab"], "cleanable": false, "note": "杀毒引擎核心数据" },
+        { "name": "迈克菲(McAfee)", "detect_paths": ["%PROGRAMFILES%\\McAfee", "%PROGRAMDATA%\\McAfee"], "cleanable": false, "note": "杀毒引擎核心数据" },
+        { "name": "Symantec/Norton", "detect_paths": ["%PROGRAMFILES%\\Norton Security", "%PROGRAMDATA%\\Symantec"], "cleanable": false, "note": "杀毒引擎核心数据" }
+      ]
+    },
+
+    "rogue_software": {
+      "description": "⚠️ 流氓软件与捆绑软件 - 建议扫描发现后提醒用户考虑卸载",
+      "apps": [
+        { "name": "360全家桶", "detect_paths": ["%PROGRAMFILES(X86)%\\360\\360Safe", "%PROGRAMFILES(X86)%\\360\\360zip", "%PROGRAMFILES(X86)%\\360\\360WD", "%PROGRAMFILES(X86)%\\360\\360se", "%APPDATA%\\360safe"], "cleanable": false, "advice": "如非必须，建议卸载。占空间且常捆绑安装其他软件", "risk_level": "high" },
+        { "name": "2345全家桶", "detect_paths": ["%PROGRAMFILES(X86)%\\2345Soft", "%APPDATA%\\2345Explorer", "%APPDATA%\\2345Pic"], "cleanable": false, "advice": "著名流氓软件家族，强烈建议全卸载", "risk_level": "critical" },
+        { "name": "驱动精灵", "detect_paths": ["%PROGRAMFILES(X86)%\\MyDrivers\\DriverGenius", "%PROGRAMFILES%\\MyDrivers\\DriverGenius"], "cleanable": false, "advice": "驱动工具用处有限，自带广告弹窗", "risk_level": "medium" },
+        { "name": "驱动人生", "detect_paths": ["%PROGRAMFILES(X86)%\\DriveTheLife"], "cleanable": false, "advice": "功能有限，可用Windows Update替代", "risk_level": "medium" },
+        { "name": "快压", "detect_paths": ["%PROGRAMFILES(X86)%\\kzip", "%PROGRAMFILES%\\kuaizip"], "cleanable": false, "advice": "弹窗广告多，建议用7-Zip或WinRAR替代", "risk_level": "high" },
+        { "name": "好压", "detect_paths": ["%PROGRAMFILES(X86)%\\HaoZip"], "cleanable": false, "advice": "弹窗广告，建议换7-Zip/WinRAR", "risk_level": "medium" },
+        { "name": "鲁大师", "detect_paths": ["%PROGRAMFILES(X86)%\\LuDaShi", "%APPDATA%\\LuDaShi"], "cleanable": false, "advice": "温度监控有用但广告多，可用HWMonitor替代", "risk_level": "medium" },
+        { "name": "小鸟壁纸", "detect_paths": ["%PROGRAMFILES(X86)%\\xiaoniao\\birdwallpaper", "%APPDATA%\\birdwallpaper"], "cleanable": false, "advice": "弹窗广告+静默安装，建议卸载", "risk_level": "high" },
+        { "name": "猎豹浏览器", "detect_paths": ["%PROGRAMFILES(X86)%\\liebao"], "cleanable": false, "advice": "老旧内核，安全风险，建议卸载", "risk_level": "high" },
+        { "name": "wifi共享大师", "detect_paths": ["%PROGRAMFILES(X86)%\\WiFiMaster"], "cleanable": false, "advice": "Windows自带热点功能可替代", "risk_level": "medium" },
+        { "name": "p2p下载器", "detect_paths": ["%PROGRAMFILES(X86)%\\kankan\\PPS", "%PROGRAMFILES(X86)%\\PPTV", "%PROGRAMFILES%\\PPLive"], "cleanable": false, "advice": "老旧播放器，P2P后台占用带宽", "risk_level": "high" },
+        { "name": "Flash中国版", "detect_paths": ["%LOCALAPPDATA%\\flash_helper", "%PROGRAMFILES(X86)%\\FlashCenter"], "cleanable": false, "advice": "特供版含广告服务，现代浏览器已不需要Flash", "risk_level": "critical" },
+        { "name": "搜狗高速浏览器", "detect_paths": ["%PROGRAMFILES(X86)%\\Sogou\\SogouExplorer"], "cleanable": false, "advice": "老旧浏览器内核，建议卸载", "risk_level": "high" },
+        { "name": "腾讯视频PC", "detect_paths": ["%PROGRAMFILES(X86)%\\Tencent\\QQLive"], "cleanable": true, "advice": "缓存可清理，如不用可卸载", "risk_level": "low" },
+        { "name": "爱奇艺PC", "detect_paths": ["%PROGRAMFILES(X86)%\\IQIYI Video", "%APPDATA%\\IQiyi"], "cleanable": true, "advice": "缓存可清理", "risk_level": "low" },
+        { "name": "迅雷", "detect_paths": ["%PROGRAMFILES(X86)%\\Thunder Network\\Thunder", "%APPDATA%\\Thunder"], "cleanable": true, "sub_cleanable": "下载缓存, 日志", "risk_level": "medium" },
+        { "name": "迅雷影音", "detect_paths": ["%PROGRAMFILES(X86)%\\Thunder Network\\Xmp"], "cleanable": false, "advice": "如不用可卸载", "risk_level": "low" }
+      ]
+    },
+
+    "virtualization": {
+      "description": "虚拟化与容器 - Docker/WSL/VMware等",
+      "apps": [
+        { "name": "Docker Desktop", "detect_paths": ["%LOCALAPPDATA%\\Docker\\wsl", "%APPDATA%\\Docker\\profiles"], "cleanable": "cautious", "sub_cleanable": "docker system prune -a", "migratable": true },
+        { "name": "WSL", "detect_paths": ["%LOCALAPPDATA%\\Packages"], "cleanable": false, "migratable": true, "migration_method": "wsl_export_import", "note": "检测*.vhdx文件" },
+        { "name": "VMware", "detect_paths": ["%USERPROFILE%\\Documents\\Virtual Machines"], "cleanable": false, "migratable": true },
+        { "name": "VirtualBox", "detect_paths": ["%USERPROFILE%\\.VirtualBox", "%USERPROFILE%\\VirtualBox VMs"], "cleanable": false, "migratable": true },
+        { "name": "Hyper-V", "detect_paths": ["%PROGRAMDATA%\\Microsoft\\Windows\\Hyper-V"], "cleanable": false },
+        { "name": "Puppeteer", "detect_paths": ["%USERPROFILE%\\.cache\\puppeteer"], "cleanable": true, "migratable": true, "migration_method": "env_var", "migration_key": "PUPPETEER_CACHE_DIR", "note": "下次使用自动重新下载Chrome" }
+      ]
+    },
+
+    "games": {
+      "description": "游戏平台 - 游戏缓存和截图",
+      "apps": [
+        { "name": "Steam", "detect_paths": ["%PROGRAMFILES(X86)%\\Steam\\steamapps\\downloading"], "cleanable": true, "note": "游戏库本身可迁移 Steam设置>下载>Steam库文件夹" },
+        { "name": "Epic Games", "detect_paths": ["%PROGRAMDATA%\\Epic\\EpicGamesLauncher"], "cleanable": true },
+        { "name": "WeGame", "detect_paths": ["%PROGRAMFILES(X86)%\\WeGame\\apps"], "cleanable": "cautious", "note": "游戏下载缓存可清理" },
+        { "name": "腾讯手游助手", "detect_paths": ["%PROGRAMFILES%\\TxGameAssistant"], "cleanable": true, "note": "模拟器数据可迁移" },
+        { "name": "MuMu模拟器", "detect_paths": ["%PROGRAMFILES%\\MuMu\\emulator\\nemu\\vms"], "cleanable": false, "migratable": true }
+      ]
+    },
+
+    "media": {
+      "description": "媒体工具 - 音乐/视频/直播",
+      "apps": [
+        { "name": "网易云音乐", "detect_paths": ["%LOCALAPPDATA%\\Netease\\CloudMusic"], "cleanable": true, "sub_cleanable": "cache, webdata" },
+        { "name": "QQ音乐", "detect_paths": ["%APPDATA%\\Tencent\\QQMusic"], "cleanable": true, "sub_cleanable": "cache" },
+        { "name": "酷狗音乐", "detect_paths": ["%APPDATA%\\kugou"], "cleanable": true, "sub_cleanable": "cache" },
+        { "name": "Spotify", "detect_paths": ["%LOCALAPPDATA%\\Spotify\\Data"], "cleanable": true },
+        { "name": "OBS Studio", "detect_paths": ["%APPDATA%\\obs-studio"], "cleanable": "cautious", "note": "含录制配置" },
+        { "name": "PotPlayer", "detect_paths": ["%APPDATA%\\Daum\\PotPlayer"], "cleanable": true, "sub_cleanable": "播放列表缓存" }
+      ]
+    },
+
+    "cloud_storage": {
+      "description": "云存储 - 同步缓存",
+      "apps": [
+        { "name": "百度网盘", "detect_paths": ["%APPDATA%\\baidunetdisk", "%USERPROFILE%\\AppData\\Roaming\\baiduyunguanjia"], "cleanable": true, "sub_cleanable": "GPUCache, DawnCache" },
+        { "name": "阿里云盘", "detect_paths": ["%APPDATA%\\aDrive"], "cleanable": true },
+        { "name": "OneDrive", "detect_paths": ["%LOCALAPPDATA%\\Microsoft\\OneDrive"], "cleanable": "cautious", "note": "同步文件在C盘，可用按需同步减少占用" },
+        { "name": "夸克网盘", "detect_paths": ["%APPDATA%\\quark"], "cleanable": true },
+        { "name": "微云", "detect_paths": ["%APPDATA%\\Tencent\\weiyun"], "cleanable": true }
+      ]
+    },
+
+    "ai_tools": {
+      "description": "AI 工具 - IDE缓存和模型数据",
+      "apps": [
+        { "name": "Trae", "detect_paths": ["%APPDATA%\\Trae"], "cleanable": true, "sub_cleanable": "Cache, Code Cache, GPUCache, DawnWebGPUCache, DawnGPUCache, DawnGraphiteCache, WebStorage, Session Storage, shared_proto_db", "migratable": false },
+        { "name": "Trae CN", "detect_paths": ["%APPDATA%\\Trae CN"], "cleanable": true, "sub_cleanable": "Cache, Code Cache, GPUCache, DawnWebGPUCache, WebStorage, Session Storage, shared_proto_db" },
+        { "name": "TRAE SOLO CN", "detect_paths": ["%APPDATA%\\TRAE SOLO CN"], "cleanable": true, "sub_cleanable": "GPUCache" },
+        { "name": "Qoder", "detect_paths": ["%APPDATA%\\Qoder"], "cleanable": true, "sub_cleanable": "Cache, Code Cache, GPUCache" },
+        { "name": "QoderWork", "detect_paths": ["%APPDATA%\\QoderWork"], "cleanable": true },
+        { "name": "LobsterAI", "detect_paths": ["%APPDATA%\\LobsterAI"], "cleanable": true },
+        { "name": "CodeBuddy", "detect_paths": ["%APPDATA%\\CodeBuddy CN"], "cleanable": true },
+        { "name": "豆包", "detect_paths": ["%APPDATA%\\Doubao"], "cleanable": false, "sub_cleanable": "User Data\\Default\\Code Cache, User Data\\Default\\Cache, User Data\\Default\\GPUCache, User Data\\Default\\DawnWebGPUCache, User Data\\Default\\DawnGraphiteCache, User Data\\Default\\Service Worker, User Data\\Default\\blob_storage, User Data\\Default\\File System, debug.log", "note": "Electron应用，含Application程序本体(525MB)不可删。只清User Data下缓存子目录" },
+        { "name": "iChat", "detect_paths": ["%APPDATA%\\ichat"], "cleanable": true, "sub_cleanable": "CefLocalStorage, store" },
+        { "name": "Cursor", "detect_paths": ["%APPDATA%\\Cursor"], "cleanable": true, "sub_cleanable": "Cache, Code Cache, GPUCache" },
+        { "name": "GitHub Copilot", "detect_paths": ["%USERPROFILE%\\.copilot"], "cleanable": true },
+        { "name": "Ollama", "detect_paths": ["%USERPROFILE%\\.ollama"], "cleanable": "cautious", "note": "含本地模型数据，删除需重新下载", "migratable": true, "migration_method": "env_var", "migration_key": "OLLAMA_MODELS" }
+      ]
+    },
+
+    "system": {
+      "description": "系统级 - 临时文件、缓存、隐藏文件",
+      "apps": [
+        { "name": "Windows临时文件", "detect_paths": ["C:\\Windows\\Temp"], "cleanable": true, "note": "安装包解压残留/程序临时文件" },
+        { "name": "用户临时文件", "detect_paths": ["%LOCALAPPDATA%\\Temp"], "cleanable": true, "note": ".tmp/.log等临时文件" },
+        { "name": "缩略图缓存", "detect_paths": ["%LOCALAPPDATA%\\Microsoft\\Windows\\Explorer"], "cleanable": true, "sub_cleanable": "*.db", "note": "浏览文件夹时自动重建" },
+        { "name": "回收站", "detect_paths": ["C:\\$Recycle.Bin"], "cleanable": "cautious", "note": "先检查有无误删重要文件" },
+        { "name": "Windows更新缓存", "detect_paths": ["C:\\Windows\\SoftwareDistribution\\Download"], "cleanable": true, "note": "更新完成后可清理，需停止wuauserv服务" },
+        { "name": "传递优化", "detect_paths": ["C:\\Windows\\ServiceProfiles\\NetworkService\\AppData\\Local\\Microsoft\\Windows\\DeliveryOptimization"], "cleanable": true, "note": "Windows更新P2P缓存" },
+        { "name": "Windows错误报告", "detect_paths": ["C:\\ProgramData\\Microsoft\\Windows\\WER"], "cleanable": true },
+        { "name": "Prefetch", "detect_paths": ["C:\\Windows\\Prefetch"], "cleanable": "cautious", "note": "可清理但不建议频繁清理，影响程序启动速度" },
+        { "name": "休眠文件", "detect_paths": ["C:\\hiberfil.sys"], "cleanable": "cautious", "note": "关闭休眠可释放，如只用睡眠可关闭", "clean_cmd": "powercfg.exe /hibernate off" },
+        { "name": "页面文件", "detect_paths": ["C:\\pagefile.sys"], "cleanable": false, "migratable": true, "note": "可迁移到其他盘，系统设置>虚拟内存" }
+      ]
+    }
+  }
+}

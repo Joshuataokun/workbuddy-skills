@@ -1,8 +1,15 @@
 {
-  "synced_at": "2026-10-28 09:34:04",
-  "skills_count": 11,
-  "total_bytes": 1786698,
+  "synced_at": "2026-10-29 09:54:51",
+  "skills_count": 12,
+  "total_bytes": 2259484,
   "skills": [
+    {
+      "dir": "c-drive-cleaner",
+      "source": "local",
+      "files": 58,
+      "bytes": 469239,
+      "sha256_of_manifest": "de0ce0355f9545f0"
+    },
     {
       "dir": "chinese-punctuation-fixer",
       "source": "local",
@@ -63,8 +70,8 @@
       "dir": "prompt-rewrite-guard",
       "source": "local",
       "files": 11,
-      "bytes": 86807,
-      "sha256_of_manifest": "8384eaaab3e6b17e"
+      "bytes": 90354,
+      "sha256_of_manifest": "daec892d0497b485"
     },
     {
       "dir": "tuniu-cli",

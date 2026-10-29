@@ -1,0 +1,65 @@
+﻿{
+    "schema":  "c-drive-cleaner clean-manifest v1",
+    "timestamp":  "2026-10-28 16:30:46",
+    "mode":  "执行：删除（本机经回收站）",
+    "admin":  true,
+    "free_before":  134278275072,
+    "targets":  [
+                    {
+                        "name":  "Chrome Cache",
+                        "path":  "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cache",
+                        "action":  "purge",
+                        "ok":  0,
+                        "fail":  0,
+                        "timed_out":  false,
+                        "seconds":  0,
+                        "failed_items":  [
+
+                                         ],
+                        "free_delta_mb":  0
+                    },
+                    {
+                        "name":  "Chrome Code Cache",
+                        "path":  "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Code Cache",
+                        "action":  "purge",
+                        "ok":  0,
+                        "fail":  1,
+                        "timed_out":  false,
+                        "seconds":  0.3,
+                        "failed_items":  [
+                                             "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Code Cache\\js  \u003cRuntimeException\u003e"
+                                         ],
+                        "free_delta_mb":  0
+                    },
+                    {
+                        "name":  "Chrome GPUCache",
+                        "path":  "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\GPUCache",
+                        "action":  "purge",
+                        "ok":  0,
+                        "fail":  0,
+                        "timed_out":  false,
+                        "seconds":  0,
+                        "failed_items":  [
+
+                                         ],
+                        "free_delta_mb":  0
+                    },
+                    {
+                        "name":  "Chrome Service Worker",
+                        "path":  "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Service Worker",
+                        "action":  "purge",
+                        "ok":  0,
+                        "fail":  2,
+                        "timed_out":  false,
+                        "seconds":  1.2,
+                        "failed_items":  [
+                                             "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Service Worker\\CacheStorage  \u003cRuntimeException\u003e",
+                                             "C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Service Worker\\ScriptCache  \u003cRuntimeException\u003e"
+                                         ],
+                        "free_delta_mb":  -0.8
+                    }
+                ],
+    "free_after":  134929526784,
+    "reclaimed_mb":  621.1,
+    "trash_reclaim_mb":  621.9
+}

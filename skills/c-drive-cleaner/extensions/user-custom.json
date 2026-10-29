@@ -1,0 +1,17 @@
+{
+  "_description": "用户自定义扩展 — 添加你电脑上独有的软件签名。格式参照 app-signatures.json",
+  "_usage": "每个条目定义: 软件名(name), 检测路径(detect_paths), 能否清理(cleanable=true/cautious/false), 能否迁移(migratable=true/false)",
+  "_example": "把你的软件补充到 apps 数组中，下次扫描时脚本会自动识别",
+
+  "apps": [
+    
+  ],
+
+  "_example_entry": {
+    "name": "我的自定义软件",
+    "detect_paths": ["%LOCALAPPDATA%\\MyApp\\cache", "D:\\MyApp\\data"],
+    "cleanable": true,
+    "migratable": false,
+    "note": "这是我自己装的软件，缓存可以安全清理"
+  }
+}

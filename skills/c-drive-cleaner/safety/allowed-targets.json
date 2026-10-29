@@ -1,0 +1,62 @@
+{
+  "_schema": "c-drive-cleaner local whitelist v1",
+  "_note": "只有本文件列出的路径允许被 clean.ps1 处理。新增条目前，先用 analyze.ps1 确认路径真实存在且内容可重建。",
+  "_update_rule": "禁止把用户文档、图片、下载、桌面、AppData\\Roaming 下的任何目录加入本文件。",
+  "protected_roots": [
+    "%USERPROFILE%\\Desktop",
+    "%USERPROFILE%\\Documents",
+    "%USERPROFILE%\\Downloads",
+    "%USERPROFILE%\\Pictures",
+    "%USERPROFILE%\\Videos",
+    "%USERPROFILE%\\Music",
+    "%USERPROFILE%\\OneDrive",
+    "%USERPROFILE%\\Favorites",
+    "%APPDATA%",
+    "%USERPROFILE%\\AppData\\LocalLow",
+    "%LOCALAPPDATA%\\Programs",
+    "%LOCALAPPDATA%\\Microsoft\\Outlook",
+    "%LOCALAPPDATA%\\Microsoft\\OneDrive",
+    "C:\\Windows\\System32",
+    "C:\\Windows\\SysWOW64",
+    "C:\\Windows\\WinSxS",
+    "C:\\Windows\\servicing",
+    "C:\\Windows\\Installer",
+    "C:\\Program Files",
+    "C:\\Program Files (x86)",
+    "C:\\ProgramData\\Microsoft\\Windows Defender",
+    "C:\\ProgramData\\Microsoft\\Crypto"
+  ],
+  "profiles": {
+    "tier1": {
+      "desc": "无需关闭任何程序，可重建缓存。成功率高。",
+      "targets": [
+        { "name": "用户临时文件", "path": "%LOCALAPPDATA%\\Temp", "mode": "purge-children", "admin": false, "note": ".tmp/.log/解压残留，占用中的文件会跳过" },
+        { "name": "npm 缓存", "path": "%LOCALAPPDATA%\\npm-cache", "mode": "purge-children", "admin": false, "note": "重新装包时按需下载" },
+        { "name": "pip 缓存", "path": "%LOCALAPPDATA%\\pip\\cache", "mode": "purge-children", "admin": false, "note": "重新装包时按需下载" }
+      ]
+    },
+    "browser": {
+      "desc": "需先完全退出 Chrome，否则活动文件被锁、只能删掉一部分。",
+      "targets": [
+        { "name": "Chrome Cache", "path": "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Cache", "mode": "purge-children", "admin": false, "note": "网页缓存，自动重建" },
+        { "name": "Chrome Code Cache", "path": "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Code Cache", "mode": "purge-children", "admin": false, "note": "JS 编译缓存，自动重建" },
+        { "name": "Chrome GPUCache", "path": "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\GPUCache", "mode": "purge-children", "admin": false, "note": "GPU 着色器缓存" },
+        { "name": "Chrome Service Worker", "path": "%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Service Worker", "mode": "purge-children", "admin": false, "note": "离线站点数据，删后部分站点首次加载变慢" }
+      ]
+    },
+    "windows": {
+      "desc": "需要管理员权限。更新缓存建议先停 wuauserv。",
+      "targets": [
+        { "name": "Windows 临时目录", "path": "C:\\Windows\\Temp", "mode": "purge-children", "admin": true, "note": "安装包解压残留" },
+        { "name": "Windows 更新下载缓存", "path": "C:\\Windows\\SoftwareDistribution\\Download", "mode": "purge-children", "admin": true, "note": "已安装补丁的安装包，删后系统会按需重下" },
+        { "name": "传递优化缓存", "path": "C:\\Windows\\ServiceProfiles\\NetworkService\\AppData\\Local\\Microsoft\\Windows\\DeliveryOptimization", "mode": "purge-children", "admin": true, "note": "更新 P2P 缓存" }
+      ]
+    }
+  },
+  "excluded_by_design": [
+    { "path": "%LOCALAPPDATA%\\Microsoft\\Windows\\Explorer\\*.db", "reason": "缩略图/图标缓存被 explorer 进程独占，不结束 explorer 就删不掉；仅 7MB，收益不抵风险，不入白名单" },
+    { "path": "C:\\$Recycle.Bin", "reason": "回收站里可能混有误删文件，必须由用户在资源管理器里人工确认，脚本不代劳" },
+    { "path": "%LOCALAPPDATA%\\Microsoft\\Windows\\WER", "reason": "错误报告可能含故障排查线索，默认保留" },
+    { "path": "C:\\Windows\\Prefetch", "reason": "清理会拖慢程序启动，不建议动" }
+  ]
+}

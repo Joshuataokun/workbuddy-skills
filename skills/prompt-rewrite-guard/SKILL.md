@@ -5,7 +5,7 @@ display_name: "提示词改写守门员（本地版）"
 display_name_en: "prompt-rewrite-guard (local)"
 description_zh: "优化、改写、收紧或压缩已有的提示词 / 系统提示词 / SKILL.md / Agent 指令：先冻结原有约束条款，再做最小改动，最后用验收用例对比改前改后的通过率。有原文要改时走守卫模式；没有原文、只有一句模糊想法或抱怨而要一段提示词时走反推模式——先自己查、只问查不到又只有你能拍板的，把没说出口的需求问出来，再产出意图卡和提示词。触发词：优化提示词、改提示词、压缩提示词、提示词不生效、输出格式不固定、写严一点、写死规则、验收用例、回归对比、按守门员流程、怎么写提示词、我该怎么跟它说、帮我想清楚要什么、反推意图、意图卡。不适用：直接要成品内容（文案、诗、故事、翻译、代码实现）。"
 description_en: "Optimize, rewrite, tighten or compress an existing prompt, system prompt, SKILL.md or agent instruction: freeze the original constraints first, make the smallest authorized change, then prove it with a before/after acceptance-case pass rate. Use when the user pastes an existing prompt, instruction set, rule list or SKILL.md and asks to change it in any way - optimize it, make it stricter, lock the output format, compress it without dropping rules, or fix unstable output. Use this even when the user never says the word prompt but clearly supplies existing text to be rewritten, hardened or trimmed. Also use it when there is no source text at all and the user only has a vague wish or complaint but wants a prompt, instruction or rule - for example 'how do I tell the AI to do X', 'it never does what I meant, how should I phrase it', 'help me work out what I actually want'. That runs the excavation mode: research first, ask only what cannot be looked up and only the user can decide, recover the requirement the user never said out loud, then deliver an intent card plus a usable prompt. Do not use it when the user wants finished content directly - copywriting, fiction, poetry, plain translation, or code implementation - because there is no prompt to excavate and no existing constraints to protect."
-version: 2.2.0
+version: 2.3.0
 agent_created: true
 ---
 
@@ -40,6 +40,17 @@ This skill runs in two modes. **Guard mode** rewrites an existing prompt without
 | 只有一句模糊想法、抱怨或目标，没有原文 | 反推 | Excavation Mode（E1–E5） |
 | 有原文，但真正想问的是另一件事 | 反推 → 守卫 | 先意图卡，后 8 步 |
 
+## 交付契约 — 两个模式都适用，优先于下文所有交付格式
+
+用户要的是**在对话里复制就能用**的提示词，不是一份要点开才能看的报告，也不是一份要他自己再判断、再改的半成品。
+
+1. **提示词直接显示在回复里。** 终稿放进一个 ` ```text ` 代码块，整段一次复制就能粘进 WorkBuddy 指令框；代码块外不夹提示词正文。一次只给一版终稿，不给 A/B 版让他挑。
+2. **不生成新文件。** 不写 .md / .txt 报告，不把账本、表格存盘，不让他「点开文件查看」。唯一例外：被改的原文本身就是本地文件（如 SKILL.md）——先备份，再写回原文件，并且**仍然**在回复里给出改后的全文或改动段落。
+3. **提示词正文不用表格。** 目标默认是 WorkBuddy 指令框（纯文本，`查得`）：用编号列表和短句，不用 Markdown 表格、`<br>`、嵌套代码块。原文本身带表格时保留原表（属于 C 项，不擅改），在摘要里提示「含表格，粘贴后可能错位，要转成列表吗」。
+4. **不清楚就先问，问完自己出终稿。** 会改变提示词写法、又只有用户能拍板的点，在**出稿之前**问：有点选提问工具就用它（每题 2–4 个选项，推荐项排第一并写一句理由，标明不选时的默认）；没有就用编号文字题，写明「回复『默认』即全按推荐，也可回 1b 2a」。一次问完，≤5 题，不附半成品。用户答完直接给**完整终稿**：不留 `[待填]` / `XXX` 占位，不写「不对你再自己改」，不让他回头比对。影响小的点不问，按默认写进正文，在摘要里列出。
+5. **过程压成摘要，放在代码块下面，≤4 行。** 守卫模式：`条款：保留 a / 改写 b / 删除 c / 新增 d（改动均经授权）`｜`回归：跑 N 条，退步 0`｜`回滚：<备份路径>` 或 `无文件改动`｜`效果：待实跑验证`。反推模式：`理解：一句话`｜`我替你定的：……（逐条标 查得 / 猜的）`。账本、归因、命中表、回归对比等完整表格**内部照做、默认不展示**；用户说「要明细 / 看账本」时再给。退步、未授权改动、未跑的用例**不许因为压缩而省略**——有就必须写进摘要。
+6. **还要改，说一句就行。** 摘要最后一行固定：`要改哪条直接说（如「第 3 条改成……」），我出新的完整版。` 用户提出修改后，以当前终稿为原文走守卫模式，重新给完整终稿，不让他自己拼接。
+
 **不许互相顶替**：守卫管的是**不丢条款**，反推管的是**问出没说出口的**。不许因为「反推看起来更快」就把该走守卫的请求拉进反推——那会把用户已有的硬要求丢掉；也不许因为「守卫更严」就把没有原文的模糊需求硬套 8 步——那会在一份不存在的账本上空转。
 
 ## Mandatory Gate: Optimizing / Rewriting an Existing Prompt
@@ -53,13 +64,13 @@ Applies whenever the user asks to optimize, rewrite, fix, polish, strengthen, br
 5. **Change ledger and re-verification (after rewriting)**: map every C-item to its location in the new draft and mark it `kept / rewritten / deleted / added`, with the reason and the authorization source. Re-check the full object × dimension combinations against the draft. Then check internal consistency, meaning each key term has one definition throughout. If behavior depends on runtime-injected content, state that prompt-side wording can only mitigate the problem and specify the change needed on the injection side.
 6. **Regression comparison (before saving)**: run the cases in `references/eval-cases.md` against the **original** prompt first and record the baseline, then run the same cases against the draft. Deliver a before/after table marked `kept / improved / regressed` per case. Any regression blocks delivery. Record the backup path of the original file as the rollback point. Never claim an improvement the table does not show.
 7. **Stop conditions**: if any C-item is lost, narrowed, or given a new exception without authorization, or if the ledger and the draft disagree, or if any acceptance case regresses, or if the draft passes only by weakening a C-item, do not save or deliver. Fix the draft or ask the user.
-8. **Honest delivery**: include the ledger, a per-requirement hit table, the before/after pass table, the rollback path, assumptions, reproducible test cases, and an uncertainty statement. Containing a rule in text is not the same as a verified effect. Mark gains in accuracy, completeness, and similar qualities as `pending verification` unless they were actually executed and observed. Never claim "all constraints preserved", "fixed", or "no problems" unless the ledger and tests support it.
+8. **Honest delivery**: produce the ledger, a per-requirement hit table, the before/after pass table, the rollback path, assumptions, reproducible test cases, and an uncertainty statement. Present them per the 交付契约: the final prompt in a chat code block first, then the ≤4-line summary; the full tables are shown only when the user asks for details, and any regression, unauthorized change, or unrun case must still appear in the summary. Containing a rule in text is not the same as a verified effect. Mark gains in accuracy, completeness, and similar qualities as `pending verification` unless they were actually executed and observed. Never claim "all constraints preserved", "fixed", or "no problems" unless the ledger and tests support it.
 
 ## Excavation Mode — 反推没说出口的提示词
 
 用在用户只有一句想法、抱怨或目标，而要的是一段提示词 / 指令 / 规则的时候。目标是**用最少的问题，问出他没表达出来的那部分**，然后给一份他能直接用、也能一眼改的东西。
 
-五步，顺序不可跳。分类细节、每类问法、问题库、意图卡模板见 `references/intent-excavation.md`。
+五步，顺序不可跳。分类细节、每类问法、问题库、意图卡模板见 `references/intent-excavation.md`。提问一律按「交付契约」第 4 条的机制执行（点选工具优先、一次问完、问完自己出完整终稿）。
 
 ### E1 · 先查后问
 
