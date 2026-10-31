@@ -4,6 +4,8 @@ Used by step 6 (Regression comparison) of the Mandatory Gate in `SKILL.md`.
 
 Purpose: prove that a rewrite did not break anything, and that any claimed improvement is visible. These eight cases test **the rewriting behaviour itself**, not a specific domain prompt. Add domain cases at the end when a project has its own hard rules.
 
+**判的是行为，不是呈现。** 账本、归因表、回归表默认压进 4 行摘要（见 `SKILL.md` 交付契约第 5 条），所以判据里出现「给出 X 表」时，一律理解为：该表**内部做出且内容齐全**，用户要明细时才展示。把"没贴表格"判成失败，属于伪造回归。
+
 ## How to run (about 3 minutes, no tools)
 
 1. Copy each case's `input` exactly as written. Do not improve it.
@@ -36,14 +38,14 @@ after:    —
 - [ ] C 项账本列出 C1–C4 四条，一条不漏
 - [ ] 改写后四条要求全部仍在，编号可追溯
 - [ ] 没有新增原文没有的硬性要求（新增内容只出现在"可选建议"里）
-- [ ] 给出变更账本，每条的 `kept / rewritten` 标注齐全
+- [ ] 内部做出变更账本，每条 `kept / rewritten` 标注齐全（默认压进摘要，要明细时展开）
 **failure**: 顺手补了"要保持礼貌""要分点回答"等原文没有的规则，把它们当成了正文。
 
 ### E2 · normal · sealed: no
 **input**: 「这段话太长了，压缩到原来的七成，但一条规则都不许丢」
 **expect**:
 - [ ] 先给出"删减优先级"清单（哪些词可去、哪些结构可并）
-- [ ] 给出压缩前后的字数或 token 数对比
+- [ ] 给出 `字数 / 约 token / 关键条款数` 三栏对比，条款数压前压后相同或已说明合并去向
 - [ ] 所有原有要求逐条仍在，无一条被合并吞掉
 **failure**: 直接交一版更短的稿，不给字数对比，也不说明删了什么。
 

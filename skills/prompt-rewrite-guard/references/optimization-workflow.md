@@ -1,99 +1,129 @@
-# Prompt Optimization Gate — Formats and Templates
+# Prompt Optimization Gate — 格式与模板
 
-Load this file when the user asks to optimize or rewrite an existing prompt. It gives the formats for the gate steps in `SKILL.md`. The rules themselves live in `SKILL.md`; this file covers formats only.
+守卫模式（`SKILL.md` 的 Mandatory Gate）专用：**规则在 `SKILL.md`，本文件只给格式**。按步取用，不要一次全读。
 
-## Light mode
+## 轻档 Light mode
 
-If the request is limited to typos, wording polish with no semantic change, or formatting, a short ledger is enough. List only the C-items touched and confirm that no other criterion changed. Use full mode as soon as any criterion's meaning, scope, threshold, or structure would change.
+只涉及错别字、不改语义的措辞微调或纯格式 → 短账本即可：只列被动到的 C 项，并确认其余条款一字未动。
+任何条款的**含义、范围、阈值、结构**会变 → 立刻转全流程 8 步。
 
-## 1. Criteria ledger format (shown to the user before rewriting)
+## 步1 账本（改写前，给用户看）
 
-| ID | Source location | Object set | Dimensions per object | Quantifier | Ranking / count | Threshold | Precision | Source constraint | Exceptions |
+| ID | 原文位置 | 对象集 | 每个对象各自的维度 | 量词 | 排序/数量 | 阈值 | 精度 | 来源限制 | 例外 |
 |---|---|---|---|---|---|---|---|---|---|
-| C1 | §x line y | {A, B} | A: d1,d2; B: d1,d2 | each / both / all | top-N + bottom-N | ... | ... | ... | none |
+| C1 | §x 第 y 行 | {A, B} | A: d1,d2；B: d1,d2 | each / both / all | top-N + bottom-N | … | … | … | 无 |
 
-Expansion rule: if a criterion says "A and B both need X", or "for each object do Y", either split it into C1a/C1b or list every object explicitly in the row. Cross-check each object × dimension cell when you verify.
+- **展开规则**：条款写成「A 和 B 都要 X」「对每个对象做 Y」时，要么拆成 C1a/C1b，要么把每个对象显式列出。复核时逐个「对象 × 维度」单元格过一遍。
+- 用户自己的元要求另记 U1、U2…，例如「更准」「更全」「更有结构」。
 
-Also record the user's own meta-requests as U1, U2, …. Examples are "more accurate", "broader", and "more structured".
+## 步2 归因（失败归因表，改写前）
 
-## 2. Failure attribution table (before rewriting)
-
-| ID | Symptom (observable) | Root cause | C-item(s) touched | Evidence (quote / line / failing case) |
+| ID | 现象（可观察） | 根因 | 涉及的 C 项 | 证据（原文引句 / 行号 / 失败用例） |
 |---|---|---|---|---|
-| A1 | e.g. output format drifts on long inputs | format rule only stated once, no enforcement clause | C3 | original §2 line 4; case E1 fails |
+| A1 | 例：长输入时输出格式漂移 | 格式规则只写了一次，没有强制条款 | C3 | 原文 §2 第 4 行；用例 E1 失败 |
 
-Rules:
-- One row per distinct failure. Merge duplicates, do not pad.
-- Evidence must be a verbatim quote, a line number, or a named case. "Feels weak" is not evidence.
-- If the user reported no failure, write one row: `no failure signal — goal is a request, not a defect`, and treat the change as an enhancement rather than a fix.
-- An empty or speculative table blocks the rewrite.
+- 一个失败一行，同类合并，不许灌水。
+- 证据必须是原文引句、行号或具名用例。「感觉有点弱」不算证据。
+- 用户没报失败，就写一行 `无失败信号——目标是诉求，不是缺陷`，并把本次改动按「增强」处理。
+- **表空或全是猜的，不许改写。**
 
-## 3. Ambiguity / authorization list
+## 步3 授权（歧义与授权清单）
 
-| ID | Item | Why it is ambiguous or which C-item it touches | Options (2–4) | Status (confirmed / declared default / waiting) |
+| ID | 事项 | 为什么有歧义 / 涉及哪条 C 项 | 选项（2–4 个） | 状态（已确认 / 默认声明 / 待答复） |
 |---|---|---|---|---|
 
-Common categories:
-- Time window and time zone.
-- Judgment basis and undefined thresholds.
-- Data-source priority and conflicts.
-- Runtime-injected content: RAG, knowledge base, tool output.
-- Subjective intensity: offer a measurable lever such as count, threshold, required or banned phrasing, or length.
-- Contradictory meta-requests.
+常见类别：时间窗与时区；判定依据与未定义阈值；数据来源优先级与冲突；运行时注入内容（RAG、知识库、工具输出）；主观强度（换成可测量的档：次数、阈值、必用或禁用措辞、长度）；自相矛盾的元要求。
 
-Any option that changes a C-item counts as a change to a hard criterion. Wait for the user to confirm it.
+任何会改动 C 项的选项，都算改硬条款——**等用户确认**再动。
 
-## 4. Change ledger format (after rewriting, before saving)
+## 步4 改动（有界改动与可选建议）
 
-| ID | New location | Action (kept / rewritten / deleted / added) | Diff summary | Reason | Authorization (user msg / U-id / none) |
+- 只改用户点名的或第 3 步已确认的。
+- 新想法一律进「可选建议」清单，格式：
+
+| # | 建议内容 | 理由 | 是否已应用 |
+|---|---|---|---|
+| O1 | 例：加一条「不确定标不确定」 | 减少编造 | 否（未授权） |
+
+- 必须**保留非授权动作的四种**：删除、放宽、收窄、给某条 C 项加新例外。任何一种出现在稿子里而没有授权来源 → 停。
+
+## 步5 变更账本（改写后、保存前）
+
+| ID | 新稿位置 | 动作（kept / rewritten / deleted / added） | 差异摘要 | 理由 | 授权来源（用户原话 / U-id / 无） |
 |---|---|---|---|---|---|
 
-Rules:
-- Every C-item appears exactly once.
-- Any `deleted`, any narrowing, and any new exception or precision change on a C-item needs a non-empty authorization. Otherwise, stop.
-- `added` rows that the user did not request belong in "Optional suggestions", not in the mandatory body of the rewrite.
+- 每个 C 项恰好出现一次。
+- 任何 `deleted`、任何收窄、任何新例外或精度变化，授权来源不能为空，否则停。
+- 用户没要求的 `added` 只属于「可选建议」，不许进正文。
 
-## 5. Regression comparison and rollback (before saving)
+## 步6 回归（对比与回滚，保存前）
 
-Run `references/eval-cases.md` twice: original prompt (baseline) → draft (after).
+先用 `references/eval-cases.md` 跑**原文**记基线，再用同一批跑新稿。
 
-| Case | Category | Sealed | Baseline | After | Mark |
+| 用例 | 类别 | sealed | 基线 | 新稿 | 标记 |
 |---|---|---|---|---|---|
 | E1 | normal | no | pass | pass | kept |
 | E3 | edge | no | pass | fail | **regressed** |
 
-Rules:
-- Any `regressed` row stops delivery. Fix the draft or ask the user.
-- `improved` requires a case that failed on the original and passes on the draft. Restating the same result is `kept`, not `improved`.
-- Report the case count run and the count not run. Silent omission is a defect.
-- Rollback point: record the absolute backup path of the original file. If the file was edited in place without a backup, create one before saving.
+- 出现 `regressed` 即停交付。
+- `improved` 必须原来 fail 或 partial、现在 pass；同一结果重复一遍只能算 `kept`。
+- 报清「跑了几条 / 没跑几条」，静默省略本身就是缺陷。
+- 回滚点：文件版记备份绝对路径（原地改又没备份，先补备份再保存）；对话版记上一版全文，写在摘要里。
 
-## 6. Pre-save self-check
+## 步7 自检（保存前）
 
-- [ ] Each C-item, including every object × dimension cell, is present in the draft.
-- [ ] No unauthorized deletion, loosening, narrowing, new exception, or precision change.
-- [ ] Each key term has a single definition across all sections.
-- [ ] Every ambiguity is either confirmed by the user or declared as the default, and it is applied consistently.
-- [ ] Unrequested additions appear only as optional suggestions.
-- [ ] Runtime-injection limits are declared, and the injection-side change is specified.
-- [ ] The attribution table has at least one evidenced row, or explicitly records that no failure signal was given.
-- [ ] Every acceptance case has both a baseline and an after value; no row is blank.
-- [ ] No case is marked `regressed`; every `improved` has a baseline of `fail` or `partial`.
-- [ ] The rollback path exists and is an absolute path to the pre-change file.
-- [ ] Sealed cases were run last, once, and the self-grading limitation is stated.
-- [ ] Summary wording, such as "all preserved" or "only enhanced", matches the ledger exactly.
+- [ ] 每个 C 项（含每个「对象 × 维度」单元格）都在新稿里
+- [ ] 没有未经授权的删除、放宽、收窄、新例外、精度变化
+- [ ] 同一术语全文只有一个定义
+- [ ] 每处歧义要么用户已确认、要么声明为默认，且全文一致执行
+- [ ] 未要求的补充只出现在可选建议里
+- [ ] 运行时注入的限制已声明，注入侧要改什么已写明
+- [ ] 归因表至少一行有证据，或明确记录「无失败信号」
+- [ ] 每条用例都有基线与新稿值，无空格
+- [ ] 没有 `regressed`；每个 `improved` 的基线是 fail 或 partial
+- [ ] 回滚点存在且可用
+- [ ] sealed 用例最后跑、只跑一次，并声明自评局限
+- [ ] 摘要措辞与账本一致（「全部保留」「只是增强」这类话不许超出账本）
 
-If any box is unchecked, do not save or deliver.
+任一项没勾上，不许保存、不许交付。
 
-## 7. Delivery template (compact)
+## 步8 交付（按交付契约呈现）
 
-1. Rewritten prompt, or its file path.
-2. Failure attribution table (section 2) — what was actually wrong.
-3. Change ledger (section 4).
-4. Regression table (section 5) — baseline vs after, per case, with marks.
-5. Hit table: each U-item and each user hard condition → `met / partial / not met / needs confirmation / pending verification`. Use `met` only for structural facts you can check in the text. Effect claims like accuracy or completeness stay `pending verification` until tested.
-6. Rollback: the absolute backup path, and one line on how to restore.
-7. Assumptions and open questions.
-8. Optional suggestions, not applied.
-9. Verification: 2–4 test inputs (normal, edge, conflict). For each, give the observable expected behavior, including at least one check per multi-object C-item.
-10. Uncertainty statement. Example: "Designed to address X; not yet validated by execution."
+默认顺序，不多不少：
+
+1. **终稿**：一个代码块，整段可复制（见 `SKILL.md` 交付契约第 1 条）。
+2. **三件套**：实跑卡（见下）、版本行、多段时的分段头。
+3. **4 行摘要**：`条款：保留 a / 改写 b / 删除 c / 新增 d（改动均经授权）`｜`回归：跑 N 条，退步 0`｜`回滚：<路径或上一版全文>`｜`效果：待实跑验证`。
+4. **尾行**：`要改哪条直接说，我出新的完整版。`
+
+用户说「要明细 / 看账本」时再依次给：归因表 → 变更账本 → 命中表（U 项与用户硬条件逐条 `met / partial / not met / needs confirmation / pending verification`，只有能在文本里核实的结构事实才可标 `met`）→ 回归表 → 假设与未决问题 → 可选建议。
+准确率、完整性这类效果主张，未经实跑一律 `pending verification`。
+
+## 三件套格式
+
+**实跑卡**（放在摘要前，三条一屏内）
+
+```
+实跑卡（把下面三条分别粘给目标 AI）
+1 正常：<输入>  → 算过：<可观察判据，能答是/否>
+2 边界：<输入>  → 算过：<判据>
+3 冲突：<输入>  → 算过：<判据>
+输出贴回来，我按判据逐条判。
+```
+
+**版本行**：`版本：v2（上一版 v1 主要改了 X）`
+
+**多段头**（一次给多段时，每段开头一行）：`P1/3 · 对象：<段名> · 模式：守卫/反推`
+
+## 压缩口径格式
+
+用户说「太长了」时按此报：
+
+| 项 | 压缩前 | 压缩后 |
+|---|---|---|
+| 字数 | n | n |
+| 约 token（粗估：中文 1 字≈1 token，英文 4 字符≈1 token） | n | n |
+| 关键条款数 | n | n（必须相等） |
+
+再列 3 处删掉的**不承重词**（尽量、适当、酌情、必要时、切实、有效等），并说明各自删了不影响哪条。
+条款数对不上，就是并了条款——必须说清哪条并进了哪条，等用户确认。
