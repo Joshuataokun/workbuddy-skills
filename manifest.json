@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-31 08:54:05",
-  "skills_count": 10,
-  "total_bytes": 1241577,
+  "synced_at": "2026-10-31 17:28:54",
+  "skills_count": 11,
+  "total_bytes": 1389994,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -60,6 +60,13 @@
       "sha256_of_manifest": "daec892d0497b485"
     },
     {
+      "dir": "reverse-engineer-anything",
+      "source": "local",
+      "files": 8,
+      "bytes": 137719,
+      "sha256_of_manifest": "8818b645c9fd3483"
+    },
+    {
       "dir": "tuniu-cli",
       "source": "local",
       "files": 11,
@@ -69,9 +76,9 @@
     {
       "dir": "workspace-converge",
       "source": "local",
-      "files": 2,
-      "bytes": 16430,
-      "sha256_of_manifest": "a2d876c555758551"
+      "files": 6,
+      "bytes": 27128,
+      "sha256_of_manifest": "172b274a6947a6e7"
     }
   ]
 }
