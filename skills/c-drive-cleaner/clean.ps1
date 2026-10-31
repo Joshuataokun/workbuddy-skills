@@ -129,11 +129,15 @@ if (-not (Test-Path -LiteralPath $whitelistPath)) {
 }
 $wl = Get-Content -LiteralPath $whitelistPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
+$denyList = @()
+if ($wl.absolute_deny) {
+    foreach ($p in $wl.absolute_deny) { $denyList += (Get-NormalizedPath (Expand-Literal $p)) }
+}
 $protected = @()
 foreach ($p in $wl.protected_roots) { $protected += (Get-NormalizedPath (Expand-Literal $p)) }
 
 function Test-TargetAllowed {
-    param([string]$ResolvedPath)
+    param([string]$ResolvedPath, [bool]$Whitelisted = $false)
 
     if ([string]::IsNullOrWhiteSpace($ResolvedPath)) {
         return [PSCustomObject]@{ Ok = $false; Reason = '路径为空' }
@@ -145,9 +149,18 @@ function Test-TargetAllowed {
     if (-not $drive.Equals('C:\', [StringComparison]::OrdinalIgnoreCase)) {
         return [PSCustomObject]@{ Ok = $false; Reason = "不在 C 盘（$drive）" }
     }
-    foreach ($prot in $protected) {
-        if (Test-UnderPath -Child $ResolvedPath -Parent $prot) {
-            return [PSCustomObject]@{ Ok = $false; Reason = "命中受保护目录 $prot" }
+    # 绝对禁止：桌面/文档/下载/系统核心，白名单也不能豁免
+    foreach ($den in $denyList) {
+        if (Test-UnderPath -Child $ResolvedPath -Parent $den) {
+            return [PSCustomObject]@{ Ok = $false; Reason = "命中绝对禁止目录 $den（白名单不可豁免）" }
+        }
+    }
+    # 受保护区：只有被白名单明确列出的路径才豁免（人工审核过的才算数）
+    if (-not $Whitelisted) {
+        foreach ($prot in $protected) {
+            if (Test-UnderPath -Child $ResolvedPath -Parent $prot) {
+                return [PSCustomObject]@{ Ok = $false; Reason = "命中受保护目录 $prot" }
+            }
         }
     }
     if (Test-ReparseAncestry -Path $ResolvedPath) {
@@ -280,7 +293,7 @@ $plan = New-Object System.Collections.ArrayList
 $blocked = New-Object System.Collections.ArrayList
 foreach ($entry in $pending) {
     $resolved = Get-NormalizedPath (Expand-Literal $entry.Target.path)
-    $check = Test-TargetAllowed -ResolvedPath $resolved
+    $check = Test-TargetAllowed -ResolvedPath $resolved -Whitelisted $true
     if (-not $check.Ok) {
         [void]$blocked.Add([PSCustomObject]@{ Name = $entry.Target.name; Path = $resolved; Reason = $check.Reason })
         continue
@@ -349,6 +362,7 @@ Write-Host '  开始执行...' -ForegroundColor Yellow
 Write-Host ''
 
 $freeBefore = Get-CFreeBytes
+$rbBeforeRun = Get-RecycleBinBytes
 $results = New-Object System.Collections.ArrayList
 $manifest = [ordered]@{
     schema      = 'c-drive-cleaner clean-manifest v1'
@@ -398,12 +412,25 @@ foreach ($p in $plan) {
 }
 
 $freeAfter = Get-CFreeBytes
+$rbAfterRun = Get-RecycleBinBytes
 $manifest['free_after'] = $freeAfter
 $manifest['reclaimed_mb'] = [math]::Round(($freeAfter - $freeBefore) / 1MB, 1)
+$manifest['recyclebin_before_bytes'] = $rbBeforeRun
+$manifest['recyclebin_after_bytes'] = $rbAfterRun
 
-# 本机实测（2026-10-28）：Clear-RecycleBin 在本会话里不可用，恒定抛 Win32Exception。
-# 不要用 C 盘可用空间差值冒充"清空回收站释放了多少" —— 空间变化可能来自别处。
+# 本机删除常被改写成「移入回收站」，同盘移动不释放空间 —— 必须主动提示
+$rbGrowth = $rbAfterRun - $rbBeforeRun
+if (-not $EmptyTrash -and $rbGrowth -gt 1048576) {
+    Write-Host ''
+    Write-Host ("  >> 有 {0} 进了回收站，C 盘空间没有真正释放。" -f (Format-Size $rbGrowth)) -ForegroundColor Yellow
+    Write-Host '     加 -EmptyTrash 重跑，或手动清空回收站，才算释放。' -ForegroundColor Yellow
+    Write-Host ('     当前回收站合计: {0}' -f (Format-Size $rbAfterRun)) -ForegroundColor DarkYellow
+}
+
+# 本机实测（2026-10-30）：Clear-RecycleBin 可用，但恒定抛假异常 Win32Exception
+# （"系统找不到指定的文件"），操作其实做完了。不要因报错重试或放弃。
 # 判定标准只看一件事：回收站体积本身有没有下降。
+# 不要用 C 盘可用空间差值冒充"清空回收站释放了多少"，空间变化可能来自别处。
 $trashReclaimMB = 0
 if ($EmptyTrash) {
     Write-Host ''
@@ -425,7 +452,7 @@ if ($EmptyTrash) {
         $trashReclaimMB = 0
     } elseif ($rbAfter -ge $rbBefore) {
         Write-Host '     >> 清空未生效：回收站体积没有下降。' -ForegroundColor Red
-        Write-Host '        本机 Clear-RecycleBin 被拦截，请用资源管理器或第三方工具（如火绒）手动清空。' -ForegroundColor Red
+        Write-Host '        可改用资源管理器或第三方工具（如火绒）手动清空。' -ForegroundColor Red
         $trashReclaimMB = 0
     } else {
         $trashReclaimMB = [math]::Round(($rbBefore - $rbAfter) / 1MB, 1)

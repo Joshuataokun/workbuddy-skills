@@ -5,3 +5,8 @@ __pycache__/
 .DS_Store
 _replaced_*/
 _retired/
+
+# 运行产物：含本机绝对路径、用户名、软件清单，不得公开
+reports/
+*.bak-*
+*.tmp

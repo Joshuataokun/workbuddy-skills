@@ -2,7 +2,7 @@
   "_schema": "c-drive-cleaner local whitelist v1",
   "_note": "只有本文件列出的路径允许被 clean.ps1 处理。新增条目前，先用 analyze.ps1 确认路径真实存在且内容可重建。",
   "_update_rule": "禁止把用户文档、图片、下载、桌面、AppData\\Roaming 下的任何目录加入本文件。",
-  "protected_roots": [
+  "absolute_deny": [
     "%USERPROFILE%\\Desktop",
     "%USERPROFILE%\\Documents",
     "%USERPROFILE%\\Downloads",
@@ -11,11 +11,6 @@
     "%USERPROFILE%\\Music",
     "%USERPROFILE%\\OneDrive",
     "%USERPROFILE%\\Favorites",
-    "%APPDATA%",
-    "%USERPROFILE%\\AppData\\LocalLow",
-    "%LOCALAPPDATA%\\Programs",
-    "%LOCALAPPDATA%\\Microsoft\\Outlook",
-    "%LOCALAPPDATA%\\Microsoft\\OneDrive",
     "C:\\Windows\\System32",
     "C:\\Windows\\SysWOW64",
     "C:\\Windows\\WinSxS",
@@ -25,6 +20,13 @@
     "C:\\Program Files (x86)",
     "C:\\ProgramData\\Microsoft\\Windows Defender",
     "C:\\ProgramData\\Microsoft\\Crypto"
+  ],
+  "protected_roots": [
+    "%APPDATA%",
+    "%USERPROFILE%\\AppData\\LocalLow",
+    "%LOCALAPPDATA%\\Programs",
+    "%LOCALAPPDATA%\\Microsoft\\Outlook",
+    "%LOCALAPPDATA%\\Microsoft\\OneDrive"
   ],
   "profiles": {
     "tier1": {
@@ -50,6 +52,18 @@
         { "name": "Windows 临时目录", "path": "C:\\Windows\\Temp", "mode": "purge-children", "admin": true, "note": "安装包解压残留" },
         { "name": "Windows 更新下载缓存", "path": "C:\\Windows\\SoftwareDistribution\\Download", "mode": "purge-children", "admin": true, "note": "已安装补丁的安装包，删后系统会按需重下" },
         { "name": "传递优化缓存", "path": "C:\\Windows\\ServiceProfiles\\NetworkService\\AppData\\Local\\Microsoft\\Windows\\DeliveryOptimization", "mode": "purge-children", "admin": true, "note": "更新 P2P 缓存" }
+      ]
+    },
+    "apps": {
+      "desc": "应用日志与更新残留。都是可再生或已无用的文件，不碰任何用户数据。",
+      "targets": [
+        { "name": "微信 日志", "path": "%APPDATA%\\Tencent\\xwechat\\log", "mode": "purge-children", "admin": false, "note": "微信运行日志，删后自动重建；聊天记录不在此目录" },
+        { "name": "腾讯会议 网页缓存", "path": "%APPDATA%\\Tencent\\WeMeet\\Global\\Data\\WebkitCacheData", "mode": "purge-children", "admin": false, "note": "仅 WebKit 缓存；同级的 DynamicResource/AvatarModel 是虚拟背景资源，不在本项" },
+        { "name": "腾讯会议 日志", "path": "%APPDATA%\\Tencent\\WeMeet\\Global\\Logs", "mode": "purge-children", "admin": false, "note": "运行日志" },
+        { "name": "WorkBuddy 更新残留", "path": "%LOCALAPPDATA%\\@genieworkbuddy-desktop-updater", "mode": "purge-children", "admin": false, "note": "更新安装包残留，已安装不需保留" },
+        { "name": "WorkBuddy 日志", "path": "%USERPROFILE%\\.workbuddy\\logs", "mode": "purge-children", "admin": false, "note": "诊断日志含 sandbox 子目录；正在写入的 daemon.log 会被跳过" },
+        { "name": "WorkBuddy 诊断轨迹", "path": "%USERPROFILE%\\.workbuddy\\traces", "mode": "purge-children", "admin": false, "note": "性能诊断数据" },
+        { "name": "Cherry Studio 更新残留", "path": "%LOCALAPPDATA%\\cherrystudio-updater", "mode": "purge-children", "admin": false, "note": "更新安装包残留" }
       ]
     }
   },

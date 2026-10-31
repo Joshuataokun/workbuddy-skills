@@ -31,10 +31,11 @@ for d in "$SRC"/*/; do
   dest="skills/$name"
   rm -rf "$dest"
   mkdir -p "$dest"
-  # 排除可重建 / 无用的内容
+  # 排除可重建 / 无用的内容；reports 含本机绝对路径，不得进公开仓库
   ( cd "$d" && tar -cf - \
       --exclude='node_modules' --exclude='.git' --exclude='__pycache__' \
-      --exclude='*.zip' --exclude='*.pyc' . ) | ( cd "$dest" && tar -xf - )
+      --exclude='*.zip' --exclude='*.pyc' --exclude='reports' \
+      --exclude='*.bak-*' --exclude='*.tmp' . ) | ( cd "$dest" && tar -xf - )
   echo "  已同步: $name"
   n=$((n+1))
 done
