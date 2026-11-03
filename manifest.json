@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-10-31 17:33:12",
+  "synced_at": "2026-11-03 10:43:24",
   "skills_count": 11,
-  "total_bytes": 1396781,
+  "total_bytes": 1417769,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -42,8 +42,8 @@
       "dir": "my-project-card",
       "source": "local",
       "files": 3,
-      "bytes": 27214,
-      "sha256_of_manifest": "1a7393b31beb87b8"
+      "bytes": 48202,
+      "sha256_of_manifest": "48683f8ef4f0b616"
     },
     {
       "dir": "ppt-generator-skill__skillhub",
