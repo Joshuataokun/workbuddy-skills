@@ -2,12 +2,12 @@
 name: my-project-card
 display_name: 我的项目卡片
 display_name_en: My Project Card
-description: 多会话共享的项目状态板。一个长期项目分成几条工作线、同时开着几个会话时，让每个会话开工就知道别人正在做什么、做过什么、踩过什么坑，收尾时把结论记回卡片。主卡放跨工作面通用的目标/口径/已排除方案，每个工作面一本分册（含"踩过的坑"），并发写入有文件锁不会互相覆盖。当用户说"接着上次""上次做到哪了""继续上次的活"，或要求"记到卡片""更新卡片""开个分册""读卡""开工"，或同时开着多个会话做同一项目时使用。
-description_zh: 多会话共享的项目状态板。一个长期项目分成几条工作线、同时开着几个会话时，让每个会话开工就知道别人正在做什么、做过什么、踩过什么坑，收尾时把结论记回卡片。主卡放跨工作面通用的目标/口径/已排除方案，每个工作面一本分册（含"踩过的坑"），并发写入有文件锁不会互相覆盖。当用户说"接着上次""上次做到哪了""继续上次的活"，或要求"记到卡片""更新卡片""开个分册""读卡""开工"，或同时开着多个会话做同一项目时使用。
-description_en: A shared project status board for work split across several sessions. Before starting, each session sees what the others are doing, what has been done, and which pitfalls were already hit; when finishing, conclusions go back to the card. The main card holds goal, constraints, rejected approaches and progress shared by all workstreams; each workstream has its own sub-card including a pitfalls section. Concurrent writes are file-locked and never overwrite each other.
+description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
+description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
+description_en: Project-space card for one workspace or one long-running project: goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, or create a sub-card. This writes records into the project card; it does not modify skill files.
 version: 2.0.0
 author: Joshuataokun
-tags: 项目卡片,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
+tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
 ---
 
 # 我的项目卡片

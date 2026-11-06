@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-04 00:54:14",
-  "skills_count": 11,
-  "total_bytes": 1427213,
+  "synced_at": "2026-11-06 17:47:26",
+  "skills_count": 12,
+  "total_bytes": 1453703,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -32,6 +32,13 @@
       "sha256_of_manifest": "93279862d76c7c19"
     },
     {
+      "dir": "game-server-research",
+      "source": "local",
+      "files": 5,
+      "bytes": 24635,
+      "sha256_of_manifest": "d63484d828e45447"
+    },
+    {
       "dir": "html-shot",
       "source": "local",
       "files": 12,
@@ -42,8 +49,8 @@
       "dir": "my-project-card",
       "source": "local",
       "files": 4,
-      "bytes": 54890,
-      "sha256_of_manifest": "007ea9450d9ed1f0"
+      "bytes": 54981,
+      "sha256_of_manifest": "ef659a71ac995145"
     },
     {
       "dir": "ppt-generator-skill__skillhub",
@@ -77,8 +84,8 @@
       "dir": "workspace-converge",
       "source": "local",
       "files": 6,
-      "bytes": 27128,
-      "sha256_of_manifest": "172b274a6947a6e7"
+      "bytes": 28892,
+      "sha256_of_manifest": "faf5deac7724f20a"
     }
   ]
 }

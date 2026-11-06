@@ -5,7 +5,7 @@ display_name_en: Workspace Converge
 description: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
 description_zh: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
 description_en: Task wrap-up and workspace convergence. Tier A runs after a task that produced artifacts (record conclusions, pitfalls, clean this round's intermediates). Tier B runs on "converge <workspace>" / "compress memory" / "trim scripts": snapshot with md5 verification, checklist for approval, compress MEMORY.md under 3000 chars with five-way verification, archive old logs and draft scripts, write a convergence record. Not for pure Q&A, concept explanations, or read-only analysis. Guardrails against wrongful deletion, memory contamination, stale paths, and hedged guesses hardening into facts.
-version: 1.4.0
+version: 1.4.1
 author: Joshuataokun
 tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌比对,防误删,防污染
 ---
@@ -52,7 +52,8 @@ B 档·空间收敛（用户说「收敛」）：先量 → 快照+md5 → 清�
    - **原子写**：先写 `.tmp` 再 `os.replace()`；直接覆盖＝写到一半被打断就成残档
 10. 五项核验，一条命令：`python scripts/converge.py verify 旧.md 新.md --max-chars 3000 --max-lines 70`
     令牌（数字/版本/提交号/路径/URL）· 推测标记不得减少 · 路径 exists · 字符 · 行数。
-    **任一 FAIL 即回滚**；确属故意更新的用 `--allow` 豁免并在报告写理由
+    **任一 FAIL 即回滚**；确属故意更新的用 `--allow` 豁免并在报告写理由。
+    路径项会展开 `~` 与 `%VAR%`；含 `<`（占位符）、`*`、`…` 或 `://` 的候选不计入（v1.4.1）。
 11. 蒸日志：要点写回 MEMORY 或单独索引；原文件移 `archive/memory-日期/`，**不许删**；**必须建 `归档索引.md`**（不建索引＝把东西藏起来）。当天日志、含未决事项的日志不动
 12. 清脚本，**两层判据缺一不可**：
     - 技术层：盘符在模块级常量（改一行可复用）→ 可留；散在函数逻辑里 → 归档。用 AST 判断，别用朴素正则（`http://` 的 `//` 会被误判）

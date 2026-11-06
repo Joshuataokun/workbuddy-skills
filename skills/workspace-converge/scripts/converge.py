@@ -51,10 +51,26 @@ def check_hedges(old, new):
 
 
 def check_paths(new):
+    """路径核验：先展开再判断；占位符与 URL 噪声不算路径。
+
+    2026-11-04 修（v1.4.1）三处误报：
+    ① 原实现直接 os.path.exists，`~/x` 不展开 → 必判失效；
+    ② 只过滤了 `*` 和 `…`，`<name>` 这类占位符被当成真实路径；
+    ③ `http://…` 会被 PATH_RE 咬出 `p:` 这种尾巴（抠掉斜杠后只剩 `p:`）。
+    """
     cands = sorted({c.rstrip("\\/，。；、") for c in PATH_RE.findall(new)})
-    bad = [c for c in cands if "*" not in c and "…" not in c and not os.path.exists(c)]
+    checked = [
+        c for c in cands
+        if not any(s in c for s in ("*", "…", "<"))
+        and not c.endswith(":")
+        and "://" not in c
+    ]
+    bad = [
+        c for c in checked
+        if not os.path.exists(os.path.expandvars(os.path.expanduser(c)))
+    ]
     return (not bad), "%d 处路径，失效 %d%s" % (
-        len(cands), len(bad), ("：" + "、".join(bad[:4])) if bad else "")
+        len(checked), len(bad), ("：" + "、".join(bad[:4])) if bad else "")
 
 
 def main():
