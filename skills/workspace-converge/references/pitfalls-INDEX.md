@@ -1,6 +1,6 @@
 # 跨空间高危坑索引
 
-<!-- inject: 6 -->
+<!-- inject: 7 -->
 <!-- 本文件是 SessionStart hook 的数据源：每会话开始注入前 8 条。
      维护规则（收敛技能 A 档）：复发≥2 或跨空间适用的坑才进这里；
      每条必须写「场景」——什么情况下该想起它；
@@ -26,6 +26,11 @@
 - 场景：想用 `git checkout -- .` / `git restore .` 回滚时
 - 做法：先 `git reset` 再 checkout，否则已 add 未 commit 的新文件被还原丢失
 - 来源: skills-dev 高频坑 | 复发: 1
+
+### [GitHub] 连接器只读
+- 场景：想让助手用 GitHub 连接器建仓库/推大文件时
+- 做法：`create_repository` 返 403（只读）；`push_files` 过不了 1.5 MB → 走本地 git+GCM（sync.sh）
+- 来源: skills-dev | 复发: 1
 
 ### [Excel体量] 字节数冒充字符数
 - 场景：量记忆/文档体量、判断是否超预算时
