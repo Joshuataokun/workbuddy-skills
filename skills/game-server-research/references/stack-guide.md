@@ -46,3 +46,7 @@ Cocos H5 + Node(colyseus/express) + MongoDB
 ```
 
 每条链的第一批关键发现（编译命令、Redis key 模式、表结构、日志位置）都是新空间 MEMORY 的第一批内容。
+
+## 同游戏生态的另一支栈（2026-11 调研补充）
+
+咸鱼之王私服生态主流是 **skynet(Lua) + openresty + Go 管理后台** 结构（社区教程常见：openresty 前置、skynet 跑 login/game 两个服务、独立 goserver 后台 85 端口、MySQL/Redis/mongo 走 docker）。本项目的 Go 逆向服务端（gate+logic+switch+battlefield 四件）是另一支实现——**同一游戏的两种私服栈，命令协议可能同源**：社区 skynet 版的协议分析成果（如 y-projects/xyzw_analyzer）对 Go 版排查同样有参考价值。接手同类项目先看进程列表判断是哪支：skynet 进程名特征 vs Go 二进制名。

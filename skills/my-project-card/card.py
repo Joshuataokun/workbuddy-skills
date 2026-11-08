@@ -908,11 +908,44 @@ def cmd_gc(a) -> None:
     print("✓ 清理备份 %d 个（保留最近 %d）｜归档事件流 %d 个" % (removed, a.keep, moved))
 
 
+def grab_section(path: str, title_keys: tuple, limit: int = 3, width: int = 100) -> list:
+    """从卡文件抓指定 section 的条目正文（去 marker、截断），供简报置顶。
+    找不到该 section 或条目为空返回 []。只读，不改文件。"""
+    if not os.path.isfile(path):
+        return []
+    out, cur = [], False
+    for ln in read(path).splitlines():
+        if ln.startswith("## "):
+            m = re.match(r"^##\s+\d+\.\s*(.+)$", ln)
+            t = m.group(1).strip() if m else ""
+            cur = any(k in t for k in title_keys)
+            continue
+        if cur and ln.startswith("- "):
+            body = ITEM_RE.match(ln.strip())
+            text = (body.group(3) if body else ln.strip()[2:]).strip()
+            if text and text != "_（暂无记录）_":
+                out.append(text[:width])
+                if len(out) >= limit:
+                    break
+    return out
+
+
 def refresh_mirror(store: str, slug: str, workspace: str) -> str:
     mp = main_path(store, slug)
     books = list_books(store, slug)
-    add = ["", "---", "", "> 这是自动生成的简报，只读。要改卡请让我用 card.py，不要手改本文件。", "",
-           "## 分册索引", ""]
+    # 开工先读：主卡已排除方案 + 各分册踩过的坑，置顶抽取（坑不 resume 就看不见 = 白记）
+    warn = []
+    for t in grab_section(mp, ("已排除", "排除"), 3):
+        warn.append("[主卡·排除] " + t)
+    for b in books:
+        for t in grab_section(book_path(store, slug, b), ("坑",), 2):
+            warn.append("[%s·坑] %s" % (b, t))
+    add = ["", "---", "", "> 这是自动生成的简报，只读。要改卡请让我用 card.py，不要手改本文件。", ""]
+    if warn:
+        add += ["## ⚠ 开工先读：坑与已排除方案", ""]
+        add += ["- " + w for w in warn[:6]]
+        add += [""]
+    add += ["## 分册索引", ""]
     if books:
         for b in books:
             cnt = count_items(book_path(store, slug, b), "book")

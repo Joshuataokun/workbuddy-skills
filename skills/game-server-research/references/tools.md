@@ -70,3 +70,9 @@ Ghidra（免费）/IDA；找 IP/端口/密钥字符串（`strings binary | grep 
 ## 合规提醒
 
 抓包/逆向/解包仅限**自用研究或已授权目标**；不解包分发他人版权客户端，不公开传播协议逆向成果。
+
+## 社区工具补充（2026-11 调研）
+
+- **game-mitm**（github.com/y-projects/game-mitm，Go 库）：专为游戏流量设计的 MITM 代理——HTTP/HTTPS/WS/WSS 全覆盖，`proxy.OnRequest/OnResponse("域名").Do(fn)` 注册拦截改包，自带 CA 证书管理，带 MessagePack 解码器。比通用 mitmproxy 更适合游戏 WS 双向改包调试（Go 写个 main 就能跑，可做改数值/改响应的自动化验证）。咸鱼之王生态同组织还有 xyzw_analyzer（全协议分析系统）、xyzw_web_helper（web 端助手）可参考。
+- **Frida 注入重定向**（客户端不改 bundle 的替代路线，来自蔚蓝档案私服 SCHALE.GameServer 的做法）：模拟器（LDPlayer 开 root+adb）跑 frida-server，宿主机注入脚本把客户端请求重定向到私服 IP——适合 APK 改不动/不想发版的场景，比改 bundle 轻但依赖模拟器环境。
+- Go 游戏服务端生产实践（Nano/Leaf 社区共识，印证本地做法）：单二进制 `CGO_ENABLED=0`（已用）；**cp .new + mv 原子替换**=蓝绿/原子部署的最小实现（已用，Go 覆盖运行中二进制报 busy 正是原子替换的信号）；可加码项：SIGTERM 优雅关闭、pprof 端点（net/http/pprof 挂内网端口）、健康检查带容量维度。

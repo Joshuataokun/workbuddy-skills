@@ -5,7 +5,7 @@ display_name_en: My Project Card
 description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
 description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
 description_en: Project-space card for one workspace or one long-running project: goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, or create a sub-card. This writes records into the project card; it does not modify skill files.
-version: 2.0.0
+version: 2.0.1
 author: Joshuataokun
 tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
 ---
@@ -98,7 +98,7 @@ python $CARD gc --slug poker-game --keep 40
 
 **开工**（每个会话第一件事）：
 
-1. `resume` 看三块：谁在动哪个工作面、最近发生了什么、待办与待确认；
+1. `resume` 看三块：**简报顶部「⚠ 开工先读：坑与已排除方案」**（已从主卡和各分册自动抽取，涉及对应场景必须先遵守）、谁在动哪个工作面、待办与待确认；
 2. 简报里显示某个工作面正被别人占着 → 先跟用户说一声，或换一条线；
 3. 主卡超过 `--stale-days`（默认 14 天）没更新 → 先核对口径再干，不拿旧卡直接上手。
 
@@ -106,7 +106,7 @@ python $CARD gc --slug poker-game --keep 40
 
 1. 做完了什么 → 主卡 `完成`，或对应分册 `已完成`
 2. 用户新定的规矩 → 主卡 `口径`；只对某条线成立的进分册
-3. 被否的方案、踩过的坑 → 主卡 `排除`（带原因）／分册 `坑`（带现象和解法）
+3. 被否的方案、踩过的坑 → 主卡 `排除`（带原因）／分册 `坑`（带现象和解法）。**坑必须带触发场景**——什么情况下该想起它；无场景的坑下个会话接不上当前动作，等于没记
 4. 冒出未决问题 → `--pending` 进 `待确认`
 5. 走之前 `release`，让别的会话知道这条线空出来了
 

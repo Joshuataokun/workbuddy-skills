@@ -52,3 +52,27 @@
 - OpenClaw 社区：重要内容前置（截断从尾部开始）、频繁重写破坏缓存
 - 技能工程标准（2026-10）：成熟度 L0-L5、可验证逻辑必须脚本化、≥3 个 eval 场景、正文 <5,000 tokens
 - 不采用：letta / cognee 类向量库方案（要服务、要 key、不可人读）
+
+## v1.5.0（2026-11-08）忘坑与止损
+
+**问题**：坑记了但召回靠模型自觉（卡片 resume 是 instruction-gated），跨空间的坑更是看不见；返工无熔断（一翔 6 脚本作废、核对写 5 遍——换了说法没换事没人拦）。
+
+**外部依据**（2026-11-08 调研，勿重复查）：
+- AgentsMesh：recall 靠规则提醒必然失败，改 hook（动作前确定性注入）才 deterministic——"Models don't remember to ask"
+- enso-os（94★）：SessionStart 注入 lessons、rules in code not prompts、"200 行 hooks > 800 行 prompt"
+- ShieldCortex：stored memory ≠ active memory，纠错埋在散文里配不上当前问题
+- TradeMemory：预飞检查——先召回教训再行动，红灯即停
+- 熔断阶梯（CSDN/xzhibot）：同一做法第 2 次失败必须停并报告；终止三判据（成功/失败/放弃）
+
+**换机后重注册 hook**（settings.json 是账号级不进仓库；让助手改 settings.json 即可）：
+在 `%USERPROFILE%\.workbuddy\settings.json` 的 `hooks.SessionStart` 数组追加：
+`{"matcher":"","hooks":[{"type":"command","command":"\"<python3.13绝对路径>\" \"%USERPROFILE%\\.workbuddy\\skills\\workspace-converge\\scripts\\pitfall_inject.py\"","timeout":10,"metadata":{"managed_by":"pitfall-reminder"}}]}`
+验证：新会话开头应出现 `<pitfall-reminder>` 段；`pitfalls/inject.log` 有当次记录。
+
+**变更**：
+- 新增「止损三条款」（返工熔断/方向门/放弃判据）——干活时生效，不等收尾
+- A 档记坑必填**触发场景**；复发≥2 或跨空间 → 晋升 `references/pitfalls-INDEX.md`（SessionStart hook 数据源，scripts/pitfall_inject.py 每会话注入前 6 条；脚本与索引都在技能内＝随 sync.sh 仓库走，换机 restore 后重注册 hook 即可，注册命令见下）
+- A 档新增止损回填：止损原因当场写成坑
+- B 档新增第 15 条坑体检：MEMORY 坑逐条判定晋升/留置/失效
+- 配套：my-project-card 2.0.1 简报置顶「⚠ 开工先读：坑与已排除」（card.py grab_section，acceptance 30/30）
+- 场景 E5（止损）加入 evals
