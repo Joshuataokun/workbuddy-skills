@@ -44,8 +44,8 @@
 
 ### [编码] 管道stdout默认GBK
 - 场景：脚本输出会被宿主程序捕获（hook 注入、自动化、MCP）且含中文时
-- 做法：写 `sys.stdout.buffer` 显式 UTF-8 字节，别用文本层 print/write——hook 宿主环境无 UTF-8 变量，Python 管道默认 cp936，宿主按 UTF-8 解码即乱码（2026-11-08 坑注入实测）
-- 来源: skills-dev | 复发: 1
+- 做法：`sys.stdout.buffer` 显式写 UTF-8 字节；文本层 write 在 hook 宿主默认 cp936 必乱码
+- 来源: skills-dev 2026-11-08 | 复发: 1
 
 ### [Windows] PowerShell 执行策略
 - 场景：在 Bash 里调用 PowerShell 跑 .ps1 脚本时
