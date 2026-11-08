@@ -5,7 +5,7 @@ display_name_en: Workspace Converge
 description: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑带触发场景、清本轮中间产物；同一做法第 2 次失败先止损汇报不硬试）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→坑体检→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损 时使用。
 description_zh: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
 description_en: Task wrap-up and workspace convergence. Tier A runs after a task that produced artifacts (record conclusions, pitfalls, clean this round's intermediates). Tier B runs on "converge <workspace>" / "compress memory" / "trim scripts": snapshot with md5 verification, checklist for approval, compress MEMORY.md under 3000 chars with five-way verification, archive old logs and draft scripts, write a convergence record. Not for pure Q&A, concept explanations, or read-only analysis. Guardrails against wrongful deletion, memory contamination, stale paths, and hedged guesses hardening into facts.
-version: 1.5.0
+version: 1.5.1
 author: Joshuataokun
 tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌比对,防误删,防污染
 ---

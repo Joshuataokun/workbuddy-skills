@@ -76,3 +76,11 @@
 - B 档新增第 15 条坑体检：MEMORY 坑逐条判定晋升/留置/失效
 - 配套：my-project-card 2.0.1 简报置顶「⚠ 开工先读：坑与已排除」（card.py grab_section，acceptance 30/30）
 - 场景 E5（止损）加入 evals
+
+## v1.5.1（2026-11-08 晚）编码缺陷修复
+
+**现象**：新会话实测坑注入通了（7 条全对），但内容到达时是乱码——hook 宿主（Node spawn）环境无 PYTHONUTF8/PYTHONIOENCODING，Python 管道 stdout 默认 cp936，文本层 write 吐 GBK 字节，宿主按 UTF-8 解码即花。接收方靠读源文件才还原。
+
+**修复**：pitfall_inject.py 改为 `sys.stdout.buffer` 显式写 UTF-8 字节；敌意环境（剥掉全部编码变量）实测输出严格 UTF-8 通过。
+
+**沉淀**：新坑「[编码] 管道stdout默认GBK」晋升进 pitfalls-INDEX.md（天生跨空间：本机一切被宿主捕获 stdout 的脚本都适用），inject 7→8。

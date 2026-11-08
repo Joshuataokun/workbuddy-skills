@@ -1,6 +1,6 @@
 # 跨空间高危坑索引
 
-<!-- inject: 7 -->
+<!-- inject: 8 -->
 <!-- 本文件是 SessionStart hook 的数据源：每会话开始注入前 8 条。
      维护规则（收敛技能 A 档）：复发≥2 或跨空间适用的坑才进这里；
      每条必须写「场景」——什么情况下该想起它；
@@ -40,6 +40,11 @@
 ### [体积测量] du 是块大小
 - 场景：报文件/目录体积时
 - 做法：`find -printf "%s"` 累加实际字节；du/ls 按块算会把 86 KB 报成 71 KB
+- 来源: skills-dev | 复发: 1
+
+### [编码] 管道stdout默认GBK
+- 场景：脚本输出会被宿主程序捕获（hook 注入、自动化、MCP）且含中文时
+- 做法：写 `sys.stdout.buffer` 显式 UTF-8 字节，别用文本层 print/write——hook 宿主环境无 UTF-8 变量，Python 管道默认 cp936，宿主按 UTF-8 解码即乱码（2026-11-08 坑注入实测）
 - 来源: skills-dev | 复发: 1
 
 ### [Windows] PowerShell 执行策略

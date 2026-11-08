@@ -53,7 +53,14 @@ try:
     out = "<pitfall-reminder>\n开工先查坑（跨空间高危，出处 收敛技能 references/pitfalls-INDEX.md，涉及对应场景必须先遵守）：\n" + "\n".join(
         "%d. %s" % (i + 1, ln) for i, ln in enumerate(lines)) + "\n</pitfall-reminder>"
 
-    sys.stdout.write(out)
+    # 必须写字节层：hook 宿主（Node spawn）环境下 Python 管道 stdout 默认 cp936，
+    # 文本层 write 会吐 GBK 字节，宿主按 UTF-8 解码即乱码（2026-11-08 实测）。
+    buf = getattr(sys.stdout, "buffer", None)
+    if buf is not None:
+        buf.write(out.encode("utf-8"))
+        buf.flush()
+    else:
+        sys.stdout.write(out)
 
     # 运行日志（验证 hook 生效用；>200 行自动清）
     try:
