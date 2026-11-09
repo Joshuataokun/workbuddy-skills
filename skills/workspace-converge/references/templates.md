@@ -62,3 +62,25 @@ python scripts/converge.py snapshot <空间目录或文件> --label YYYYMMDD
 ```
 
 它会复制并**逐文件 md5 校验**，输出"不一致 0"才算成功。手抄 copy 不校验，等于没验过。
+
+## TTL 模板（v1.6.0）
+
+`_TTL.json` 由 `ttl.py init` 生成，不要手写；这里只说明字段含义，写错会导致整批不处理：
+
+```
+version=1 / created_by / created_at
+archived_at + time_basis   归档时刻与依据（目录名日期 / 最早文件 mtime / 目录 mtime）
+ttl_days=3 / expires_at    到期时刻
+pinned / pin_reason        整目录强制 pin 时用
+root                       单元绝对目录
+files[]                    path / bytes / sha256 / disposition / reason / deleted_at
+```
+
+`ttl-ledger.md` 表头（由脚本自动写，审计账不进 MEMORY.md）：
+
+```
+| 时间 | 隔离目录 | 文件 | 字节 | sha256(前12) | 归档时间 | 理由 |
+|---|---|---|---|---|---|---|
+```
+
+`ttl-refs.txt` 是引用源清单，放 `<空间>/.workbuddy/archive/`，purge 前由助手刷新（导出自动化 prompt 关键词）。

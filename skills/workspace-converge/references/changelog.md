@@ -84,3 +84,25 @@
 **修复**：pitfall_inject.py 改为 `sys.stdout.buffer` 显式写 UTF-8 字节；敌意环境（剥掉全部编码变量）实测输出严格 UTF-8 通过。
 
 **沉淀**：新坑「[编码] 管道stdout默认GBK」晋升进 pitfalls-INDEX.md（天生跨空间：本机一切被宿主捕获 stdout 的脚本都适用），inject 7→8。
+
+## v1.6.0（2026-11-09）TTL 到期清理 + 全面优化
+
+**问题**：收敛只归档不删除，全机 26 个隔离单元 / 300+ 文件 / 最老 28 天从没清过。用户要求「3 天后再次运行收敛技能，自行删除」。
+
+**调研**（2026-11-09，出处与全文摘要见 `references/ttl-guide.md` 第九节，**勿重复查**）：
+- Hermes Curator RFC #16077：archive-only + 显式 purge + pin + ledger + dry-run + 引用 cron 跳过
+- Archive Management Skill：TTL 且 applied_count=0 才删、活跃引用永不删、清理写 archive.log
+- 本机每周体检 v9.3：计划冻结 / 24h 活动守卫 / 路径断言 / manifest 校验 / 回读校验
+- openclaw-optimization-guide：MEMORY.md 只做索引
+
+**变更**：
+- 新增 `scripts/ttl.py`（init / backfill / scan / purge / pin），只依赖标准库；输出走 stdout.buffer 显式 UTF-8
+- 新增 `references/ttl-guide.md`：细则、命令速查、与 v9.3 的分工、调研出处、首跑实测
+- SKILL.md 新增第 25–30 条（精简版，细则下沉）、description/description_zh 同步加 TTL 触发词、速览加「到期清理」、脚本表加 ttl.py
+- evals 新增 E6（六场景覆盖未到期 / 引用 / pin / 首次 dry-run / 幂等 / 分类）
+- 存量 26 单元补 `_TTL.json`（非破坏）；当前空间首次 dry-run 已跑、armed 已写、**本轮零删除**
+- 主动 pin `test_ledger.xlsx` / `test_ledger2.xlsx`（check_ledger.py 回归样本）
+
+**用户拍板**：只删垃圾类 / 存量补 manifest 立即执行 / 自动删＋留痕（首次 dry-run）。
+
+**两种判断与上一版不同**：10-26 反对建 learnings 技能、10-29 反对建第 13 个技能，理由是"复盘不能让操作变快"；这次 TTL 是从真实堆积里长出来的、有确定性脚本和验收场景，条件不同结论不同。

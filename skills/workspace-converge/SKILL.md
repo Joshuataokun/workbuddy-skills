@@ -2,10 +2,10 @@
 name: workspace-converge
 display_name: 空间收敛
 display_name_en: Workspace Converge
-description: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑带触发场景、清本轮中间产物；同一做法第 2 次失败先止损汇报不硬试）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→坑体检→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损 时使用。
-description_zh: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物 时使用。
+description: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑带触发场景、清本轮中间产物；同一做法第 2 次失败先止损汇报不硬试）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→坑体检→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定；归档隔离单元带 3 天 TTL，再次运行收敛时自动释放已过期的垃圾类文件（记忆快照/交付物永不自动删）。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损、到期清理、TTL 时使用。
+description_zh: 任务收尾与空间收敛。任务有产出交完时做 A 档（记结论、记坑、清本轮中间产物）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、防路径失效、防"猜测被写成定论"的规定；归档带 3 天 TTL，再次运行时自动释放已过期的垃圾类文件。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、到期清理、TTL 时使用。
 description_en: Task wrap-up and workspace convergence. Tier A runs after a task that produced artifacts (record conclusions, pitfalls, clean this round's intermediates). Tier B runs on "converge <workspace>" / "compress memory" / "trim scripts": snapshot with md5 verification, checklist for approval, compress MEMORY.md under 3000 chars with five-way verification, archive old logs and draft scripts, write a convergence record. Not for pure Q&A, concept explanations, or read-only analysis. Guardrails against wrongful deletion, memory contamination, stale paths, and hedged guesses hardening into facts.
-version: 1.5.1
+version: 1.6.0
 author: Joshuataokun
 tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌比对,防误删,防污染
 ---
@@ -16,7 +16,7 @@ tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌�
 
 ```
 A 档·任务收尾（有产出时自动）：记结论 → 记坑 → 只清本轮新建的中间产物 → 当天日志追加
-B 档·空间收敛（用户说「收敛」）：先量 → 快照+md5 → 清单待确认 → 压记忆（原子写）
+B 档·空间收敛（用户说「收敛」）：先量+到期清理 → 快照+md5 → 清单待确认 → 压记忆（原子写）
         → converge.py verify 五项 → 蒸日志（带索引）→ 清草稿脚本 → 搬家后复验 → 报告
 ```
 
@@ -83,6 +83,15 @@ B 档·空间收敛（用户说「收敛」）：先量 → 快照+md5 → 清�
     **压记忆必须附「处置表」**：只列删除与合并项，一条一行三列（原文摘要 / 处置 / 理由）。只保证"一条没丢"却不给对照＝用户无法核
 24. 压缩不宜频繁：MEMORY 每次重写都会使平台缓存失效、下一次变贵变慢——**攒够触发条件再做**
 
+## TTL 到期清理（v1.6.0，细则见 `references/ttl-guide.md`）
+
+25. **归档即登记**：移入隔离单元当刻跑 `ttl.py init <目录>` 写 `_TTL.json`（归档/到期时间＋每文件 sha256）。**不靠 mtime**
+26. **3 天到期**，不建定时任务；只在再次运行收敛时检查，只扫当前空间
+27. **只删垃圾类**：草稿/诊断/测试/中间产物可删；记忆快照、旧日志、技能备份、交付物、基线/构建产物、仓库资产、>1MB 文件一律 **pin**。拿不准就 pin
+28. **删前四闸**：manifest 合法 · 已过期 · 24h 无写入 · 未被引用（purge 前刷新 `ttl-refs.txt`）。通用文件名不凭同名拦
+29. **首次强制 dry-run**，第二次起才真删；两阶段（冻结清单→按清单删＋删前复核）、路径断言、写 ledger、回读、幂等
+30. **台账不是恢复源**，删除不可逆；3 天窗口内说「保留 <文件>」→ `ttl.py pin <目录> --file <路径>`
+
 ## 脚本
 
 | 脚本 | 用途 |
@@ -90,11 +99,13 @@ B 档·空间收敛（用户说「收敛」）：先量 → 快照+md5 → 清�
 | `scripts/converge.py verify 旧 新` | 五项核验一条命令，退出码 1 = 有 FAIL，即回滚 |
 | `scripts/converge.py snapshot <路径>` | 快照＋逐文件 md5 校验（回滚点） |
 | `scripts/tokens.py extract/check` | 单看令牌与推测标记（verify 已含） |
+| `scripts/ttl.py init/backfill/scan/purge/pin` | 隔离区 3 天到期清理，**命令格式见 ttl-guide.md** |
 
 只依赖标准库。别用肉眼代替——2026-10-29 实测：手工列的 32 个令牌号称零丢失，脚本一跑漏 3 个指针。
 
 ## 参考
 
 - `references/templates.md`：处置表 / 归档索引 / 收敛记录 / 快照 的照抄模板
+- `references/ttl-guide.md`：TTL 全部细则、命令速查、与每周体检 v9.3 的分工（**改 TTL 规则前先读**）
 - `references/changelog.md`：版本变更与全部由来（**改规则前先读**）
-- `evals/scenarios.md`：五个验收场景（正常 / 输入不全 / 误用边界 / 误删防护 / 止损），**改完必跑**
+- `evals/scenarios.md`：六个验收场景（正常 / 输入不全 / 误用边界 / 误删防护 / 止损 / TTL），**改完必跑**
