@@ -40,7 +40,9 @@
 换机重注册：在 `~/.workbuddy/settings.json` 的 `hooks.Stop` 追加下面这一条，保留原有 tdrive 与 `stop_guard.py` 两条（本机 2026-11-10 已挂好，共 3 条）：
 
 ```json
-{"hooks": [{"type": "command", "command": "\"C:/Users/Administrator/.workbuddy/binaries/python/versions/3.13.12/python.exe\" \"C:/Users/Administrator/.workbuddy/skills/workspace-converge/scripts/wrap_cleanup.py\"", "timeout": 15}]}
+{"matcher": "", "hooks": [{"type": "command", "command": "\"C:/Users/Administrator/.workbuddy/binaries/python/versions/3.13.12/python.exe\" \"C:/Users/Administrator/.workbuddy/skills/workspace-converge/scripts/wrap_cleanup.py\"", "timeout": 15, "metadata": {"managed_by": "workspace-converge", "description": "收尾清理：Stop 时刻按白名单清本轮新建中间产物（首次 dry-run，之后自动删并留台账，fail-open）"}}]}
 ```
+
+`matcher` / `metadata` 与本机原有 tdrive、`stop_guard.py` 两条 hook 的结构保持一致，别只写 `hooks` 一个字段。
 
 换机后 Python 路径和账号目录可能不同 → 先照本机已有 hook 的 `python.exe` 路径替换，**别照抄账号名**。改前先备份 `settings.json`；改后回读校验「非 hooks 键、SessionStart、SessionEnd、原有 Stop 条目」都没变，再确认 `wrap_cleanup.py` 只有 1 条挂载（幂等）。

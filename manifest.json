@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-10 22:18:22",
+  "synced_at": "2026-11-10 22:20:39",
   "skills_count": 12,
-  "total_bytes": 1712901,
+  "total_bytes": 1713247,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -84,7 +84,7 @@
       "dir": "workspace-converge",
       "source": "local",
       "files": 13,
-      "bytes": 109734,
+      "bytes": 110080,
       "sha256_of_manifest": "de619a4205110b37"
     }
   ]
