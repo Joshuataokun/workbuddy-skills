@@ -21,6 +21,7 @@
   book    新建/列出分册
   mirror  只刷新工作区简报
   gc      备份收敛 + 事件流归档
+  audit   查漏：读过卡却没写卡 / Stop 拦截记录
 """
 from __future__ import annotations
 
@@ -445,7 +446,8 @@ def journal_add(store: str, slug: str, rec: dict) -> None:
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
-def journal_tail(store: str, slug: str, n: int = 8):
+def journal_all(store: str, slug: str):
+    """读事件流全量（最近三个月的文件）。Stop 守卫和 audit 都用它。"""
     files = sorted(glob.glob(os.path.join(journal_dir(store, slug), "*.ndjson")))[-3:]
     out = []
     for fp in files:
@@ -456,7 +458,42 @@ def journal_tail(store: str, slug: str, n: int = 8):
                     out.append(json.loads(ln))
         except Exception:
             continue
-    return out[-n:]
+    return out
+
+
+def journal_tail(store: str, slug: str, n: int = 8):
+    return journal_all(store, slug)[-n:]
+
+
+def guard_log_path(store: str) -> str:
+    """Stop 守卫的判定日志，放在卡片库根目录，不属于任何一张卡。"""
+    return os.path.join(store, ".stop-guard.log")
+
+
+def guard_read(store: str, n: int = 400):
+    p = guard_log_path(store)
+    if not os.path.isfile(p):
+        return []
+    try:
+        return [json.loads(x) for x in read(p).splitlines() if x.strip()][-n:]
+    except Exception:
+        return []
+
+
+def guard_write(store: str, rec: dict) -> None:
+    """只追加，绝不因日志失败影响 hook。超过 2000 行收敛到 400 行。"""
+    try:
+        os.makedirs(store, exist_ok=True)
+        p = guard_log_path(store)
+        rec = dict(rec)
+        rec.setdefault("t", now_iso())
+        with open(p, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        if sum(1 for _ in open(p, encoding="utf-8", errors="replace")) > 2000:
+            lines = open(p, encoding="utf-8", errors="replace").read().splitlines()
+            write_atomic(p, "\n".join(lines[-400:]) + "\n")
+    except Exception:
+        pass
 
 
 # ------------------------------------------------------------------ 备份
@@ -685,6 +722,13 @@ def cmd_release(a) -> None:
 def cmd_resume(a) -> None:
     slug = resolve(a.store, a.project, a.slug)
     mp = main_path(a.store, slug)
+    cwd = os.path.abspath(a.workspace or os.getcwd())
+    sid = a.session or worktag(cwd)
+    # 读过卡留痕：Stop 守卫与 audit 靠它知道「这个会话碰过卡片」。
+    # 只追加事件流，不改卡片内容，也不登记 sessions.json（不制造虚假占用）。
+    journal_add(a.store, slug, {
+        "w": sid, "a": "open", "b": "", "sec": "读",
+        "cwd": cwd, "text": "开工读了卡"})
     text = read(mp)
     upd = ""
     for ln in text.splitlines()[:12]:
@@ -717,7 +761,8 @@ def cmd_resume(a) -> None:
     if dead:
         print("\n▌可能已结束（%d 个，超过 %d 分钟没动静）" % (len(dead), STALE_SESSION_MIN))
 
-    tail = journal_tail(a.store, slug, 6)
+    tail = [r for r in journal_all(a.store, slug)
+            if r.get("a") in ("add", "revise", "claim", "release")][-6:]
     if tail:
         print("\n▌最近发生")
         for r in tail:
@@ -976,10 +1021,56 @@ def cmd_mirror(a) -> None:
         print("✓ 简报：%s" % m)
 
 
+def cmd_audit(a) -> None:
+    """查漏：谁读过卡却没写卡；Stop 守卫拦了几次、有没有补上。"""
+    if a.slug and os.path.isdir(card_dir(a.store, a.slug)):
+        slugs = [a.slug]
+    else:
+        slugs = sorted(d for d in (os.listdir(a.store) if os.path.isdir(a.store) else [])
+                       if os.path.isfile(main_path(a.store, d)))
+    if not slugs:
+        print("· 没有卡片")
+        return
+    cutoff = (now_dt() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S")
+    print("=== 卡片查漏（最近 7 天）===")
+    missed_all = 0
+    for slug in slugs:
+        rows = [r for r in journal_all(a.store, slug) if r.get("t", "") >= cutoff]
+        opens, writes = {}, set()
+        for r in rows:
+            w, act = r.get("w", ""), r.get("a")
+            if act == "open":
+                rec = opens.setdefault(w, {"n": 0, "t": r.get("t", ""), "cwd": r.get("cwd", "")})
+                rec["n"] += 1
+                rec["t"] = max(rec["t"], r.get("t", ""))
+            elif act in ("add", "revise", "claim"):
+                writes.add(w)
+        pending = [(w, v) for w, v in opens.items() if w not in writes]
+        g = [x for x in guard_read(a.store)
+             if x.get("slug") == slug and x.get("t", "") >= cutoff]
+        blocked = [x for x in g if x.get("k") == "block"]
+        missed = [x for x in g if x.get("k") == "miss"]
+        missed_all += len(missed)
+        if not pending and not blocked and not missed:
+            print("  ✓ %s：没有漏记" % slug)
+            continue
+        print("  · %s" % slug)
+        for w, v in sorted(pending, key=lambda x: x[1]["t"], reverse=True)[:5]:
+            print("      读过没写  %s  %s  %s（读 %d 次）" % (
+                w, alias_of(v["cwd"]), v["t"][:16], v["n"]))
+        if blocked or missed:
+            print("      Stop 拦截 %d 次，提醒后仍未补卡 %d 次" % (len(blocked), len(missed)))
+            for x in missed[-3:]:
+                print("      漏记 %s  %s" % (x.get("t", "")[:16], str(x.get("sid", ""))[:8]))
+    print("— 共 %d 张卡；提醒后仍未补卡 %d 次" % (len(slugs), missed_all))
+    print("  守卫总开关：%s（文件存在即停止拦截）" % os.path.join(a.store, ".stop-guard-off"))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="我的项目卡片 2.0")
     ap.add_argument("cmd", choices=["init", "add", "revise", "claim", "release", "resume",
-                                    "show", "search", "check", "list", "book", "mirror", "gc"])
+                                    "show", "search", "check", "list", "book", "mirror",
+                                    "gc", "audit"])
     ap.add_argument("--project")
     ap.add_argument("--slug")
     ap.add_argument("--store", default=DEFAULT_STORE)
@@ -1005,7 +1096,7 @@ def main() -> None:
     {"init": cmd_init, "add": cmd_add, "revise": cmd_revise, "claim": cmd_claim,
      "release": cmd_release, "resume": cmd_resume, "show": cmd_show, "search": cmd_search,
      "check": cmd_check, "list": cmd_list, "book": cmd_book, "mirror": cmd_mirror,
-     "gc": cmd_gc}[a.cmd](a)
+     "gc": cmd_gc, "audit": cmd_audit}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""my-project-card 回归验收：改完引擎跑一遍，29 项检查。
+"""my-project-card 回归验收：建卡、写入、并发、简报、守卫放行与拦截。
 
 用法： python scripts/acceptance.py
 退出码 0 表示全过。改数据结构或写入逻辑后必跑。
@@ -133,6 +133,75 @@ r = run("mirror", "--slug", "acc", "--workspace", os.path.join(S, "ws-a"), "--st
 mf = os.path.join(S, "ws-a", ".workbuddy", "PROJECT_CONTEXT.md")
 chk("简报生成", os.path.isfile(mf), r.stdout)
 chk("简报含只读提示", "只读" in open(mf, encoding="utf-8").read())
+
+print("[9] Stop 守卫：留痕、放行、拦截、查漏")
+import json
+import time
+
+GUARD = os.path.join(os.path.dirname(CARD), "scripts", "stop_guard.py")
+GENV = dict(os.environ, CARD_STORE=S, CARD_STOP_GUARD_DEBUG="1")
+GWS = os.path.join(S, "ws-guard")
+
+
+def guard_run(payload):
+    return subprocess.run([sys.executable, GUARD], input=json.dumps(payload),
+                          capture_output=True, text=True, encoding="utf-8", env=GENV)
+
+
+def guard_tp(tools):
+    p = os.path.join(S, "guard-turn.jsonl")
+    now = int(time.time() * 1000)
+    rows = [{"type": "message", "role": "user", "timestamp": now - 60000,
+             "content": [{"type": "input_text", "text": "回归本轮"}]}]
+    for name, args in tools:
+        rows.append({"type": "function_call", "name": name,
+                     "arguments": json.dumps(args), "timestamp": now - 30000})
+    with open(p, "w", encoding="utf-8", newline="\n") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    return p
+
+
+def guard_base(**kw):
+    d = {"session_id": "acc-sid", "cwd": GWS, "transcript_path": "",
+         "hook_event_name": "Stop", "stop_hook_active": False}
+    d.update(kw)
+    return d
+
+
+r = run("init", "--project", "守卫回归", "--slug", "grd", "--workspace", GWS, "--store", S)
+chk("守卫用临时卡建成", r.returncode == 0, r.stdout + r.stderr)
+r = run("resume", "--slug", "grd", "--session", "grd1", "--store", S)
+chk("resume 留痕", r.returncode == 0, r.stdout)
+r = run("audit", "--slug", "grd", "--store", S)
+chk("audit 报读过没写", "读过没写" in r.stdout and "grd1" in r.stdout, r.stdout)
+
+r = guard_run(guard_base(transcript_path=guard_tp([("Read", {"file_path": "x"})])))
+chk("纯只读放行", r.returncode == 0 and r.stdout.strip() == "", r.stdout + r.stderr)
+r = guard_run(guard_base(transcript_path=guard_tp([("Edit", {"file_path": "x"})])))
+try:
+    got = json.loads(r.stdout)
+except Exception:
+    got = {}
+chk("有改动没写卡被拦", got.get("continue") is False and
+    "card.py" in got.get("reason", ""), r.stdout[:200])
+r = guard_run(guard_base(stop_hook_active=True))
+chk("已续跑过不再拦", r.returncode == 0 and r.stdout.strip() == "", r.stdout)
+
+off = os.path.join(S, ".stop-guard-off")
+open(off, "w", encoding="utf-8").write("off")
+r = guard_run(guard_base(transcript_path=guard_tp([("Write", {"file_path": "x"})])))
+chk("总开关放行", r.returncode == 0 and r.stdout.strip() == "", r.stdout)
+os.remove(off)
+
+r = run("add", "--slug", "grd", "--section", "进度", "--text", "守卫回归补记一条",
+        "--session", "grd1", "--store", S)
+chk("补卡成功", r.returncode == 0, r.stdout + r.stderr)
+r = guard_run(guard_base(transcript_path=guard_tp([("Edit", {"file_path": "x"})])))
+chk("本轮已写卡放行", r.returncode == 0 and r.stdout.strip() == "", r.stdout)
+r = run("audit", "--slug", "grd", "--store", S)
+chk("audit 不再报读过没写", "读过没写" not in r.stdout, r.stdout)
+chk("audit 报出拦截记录", "Stop 拦截" in r.stdout, r.stdout)
 
 print("\n结果：%d 通过 / %d 失败" % (ok, fail))
 sys.exit(0 if fail == 0 else 1)
