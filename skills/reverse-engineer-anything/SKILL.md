@@ -1,6 +1,6 @@
 ---
 name: reverse-engineer-anything
-description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA, including Windows .exe / PE executables, DLLs, installers and packaged desktop apps, and build agent environments (AgentEnv bundles) of web applications from a live instance or a capture, and of Linux desktop apps with a task from a request. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, or guide a reconstruction. Trigger phrases: exe 逆向、可执行文件分析、PE 分析、Windows 程序逆向、dll 分析、安装包解包、反编译 exe. Skip REA for ordinary source-repository architecture analysis.
+description: Reverse engineer native, managed, Electron/JavaScript, packaged, firmware, and browser targets with REA, including Windows .exe / PE executables, DLLs, installers and packaged desktop apps, and build agent environments (AgentEnv bundles) of web applications from a live instance or a capture, and of Linux desktop apps with a task from a request. Use shipped-artifact or requested runtime evidence to explain features, compare versions, decompile code, or guide a reconstruction. Triggers also cover exe 逆向、可执行文件分析、PE 分析、Windows 程序逆向、dll 分析、安装包解包、反编译 exe. Skip REA for ordinary source-repository architecture analysis.
 metadata:
   version: "62"
 ---
