@@ -79,6 +79,20 @@
 
 **失败判据**：删到 .md/交付物/快照/16MB 原件 · 未到期就删 · 首次直接删 · 删了被引用文件 · 重复运行又删一遍 · 台账缺 sha256。
 
+## E7 · 收尾清理（v1.7.0 新增，跑 `scripts/acceptance_wrap.py`）
+
+**喂什么**：临时空间放 5 个垃圾类（3 个 `.tmp`、`__pycache__/x.pyc`、`test_acc.xlsx`）＋ 6 个 pin 项（keep.md、keep.py、1.1MB big.tmp、`.workbuddy/inside.tmp`、仓库内 repo.tmp、受保护目录文件）；喂一个含 user message 的假 transcript。
+
+**必须看到**（脚本逐条核，22 项）：
+- [ ] 首次运行强制 dry-run：**零删除**、stdout 空、写 `armed: true`、出「wrap-首次清单.md」
+- [ ] 第二次运行：5 个垃圾类删掉，6 个 pin 项一个不动
+- [ ] 删前备份到隔离区且 sha256 一致；`wrap-ledger.md` 有 5 行含 sha256 的记录
+- [ ] 第三次运行 removed=0（幂等）；单轮最多删 10 个
+- [ ] 个人目录 / 非空间目录 / `stop_hook_active` / 总开关 / 坏输入 / 切不出本轮边界 → 一律零删除
+- [ ] 全程 stdout 为空、exit 0
+
+**失败判据**：首次就删 · 删到交付物/大文件/受保护目录 · 无备份就删 · 台账缺 sha256 · 重复运行又删 · hook 往 stdout 打了东西。
+
 ## 怎么用
 
 1. 改 SKILL.md 前，用旧版跑一遍，记基线。

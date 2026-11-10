@@ -4,7 +4,7 @@ display_name: 我的项目卡片
 display_name_en: My Project Card
 description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
 description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
-description_en: Project-space card for one workspace or one long-running project: goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, or create a sub-card. This writes records into the project card; it does not modify skill files.
+description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, or create a sub-card. This writes records into the project card; it does not modify skill files.
 version: 2.1.0
 author: Joshuataokun
 tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
@@ -131,6 +131,7 @@ python $CARD audit --slug poker-game
 - **停用**：在 `~/.workbuddy/cards/` 建一个空的 `.stop-guard-off` 文件，守卫立即静默放行；删掉即恢复。判定日志在 `~/.workbuddy/cards/.stop-guard.log`。
 - **fail-open**：找不到卡、没有 transcript、切不出本轮边界、本轮纯只读、脚本自身出错，一律放行。守卫宁可漏拦，绝不把会话卡住。
 - **生效前提**：hooks 是用户级全局配置，改完 `settings.json` **不会热加载**，要重启 WorkBuddy 或在 `/hooks` 面板审阅后才生效；本机 5 张卡、所有空间都会受影响。
+- **收尾归属**：`workspace-converge/references/wrap-routing.md` 是主本——项目状态写卡片，长期口径写空间 `MEMORY.md`，过程写当天日志，中间产物由 Stop hook 的清理脚本处理。**同一件事只写一处**；助手不自己删文件。
 
 ## 六、多会话并发的三条硬规矩
 

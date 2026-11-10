@@ -189,6 +189,8 @@ def reason_text(slug: str, cwd: str) -> str:
         "--workspace \"%s\" 写进卡片（分册改动加 --book 和 --section 已完成）。"
         "只写事实，不写套话和推测。若本轮确实只是查资料、试跑或纯问答、没产生需要留存的结论，"
         "直接说明一句理由即可收工，不必硬凑一条。"
+        "收尾按 workspace-converge/references/wrap-routing.md 的归属表执行：同一件事只写一处；"
+        "本轮中间产物由 Stop hook 的清理脚本处理，不要自己删文件。"
     ) % (slug, CARD_PY, slug, cwd)
 
 

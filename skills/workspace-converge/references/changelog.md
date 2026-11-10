@@ -106,3 +106,26 @@
 **用户拍板**：只删垃圾类 / 存量补 manifest 立即执行 / 自动删＋留痕（首次 dry-run）。
 
 **两种判断与上一版不同**：10-26 反对建 learnings 技能、10-29 反对建第 13 个技能，理由是"复盘不能让操作变快"；这次 TTL 是从真实堆积里长出来的、有确定性脚本和验收场景，条件不同结论不同。
+
+## v1.7.0（2026-11-10 晚）收尾链 + Stop 自动清理
+
+**问题**：用户问「卡片技能与收敛技能是否重复、要不要把收敛合并进卡片」。核查后定性为**编排重复**而非能力重复：同一轮收尾要写卡片 / MEMORY.md / 当天日志三处，且收敛 A 档靠模型自觉、卡片 Stop 守卫是 hook，表现成「卡片每次都拦、收敛常常没干」。
+
+**调研（勿重复查）**：合并派 close-session / wrap-it-up / Session Cleanup 都把「写记忆」与「清产物」放同一收尾流程，但删除一律先审计或交互确认；分离派 claude-mem `auto-clear.js`（只清上下文不删盘、必须先 `work_state_write` 成功）、Neat Freak（知识收尾与清场分阶段，「最初说做完后清理不替代最终确认」）、living-docs-governance（one canonical owner per fact）、moltbook/clirank（scratch 与 durable 分层）、GitHub Copilot CLI（cleanup 只预览、prune 要 dry-run）。**结论**：主流把两者放同一流程的不同阶段，不做同一个自动删除动作；且两技能本来是上下游（收敛写坑索引 → 坑注入 hook ＋ 卡片简报置顶消费），合并会切断。
+
+**三处口径矛盾（用户裁决）**：用户级记忆「列待删、产物不自行删除」／SKILL.md A 档「只删本轮新建的」／v1.6.0 TTL 真删 purge。用户拍板：**方案 A 不合并 ＋ A 档真删本轮新建中间产物 ＋ 沿用 TTL 模式**（首次 dry-run，之后自动删并留台账）。
+
+**变更**：
+- 新增 `references/wrap-routing.md`（归属表唯一主本：一张表定死什么写哪、收尾链、删除硬规矩）
+- 新增 `scripts/wrap_cleanup.py`（Stop hook 调用；复用 ttl.py 的 `sha256` / `collect_refs` / `referenced` / `PIN_MARKERS`，不重复造护栏）
+- 新增 `scripts/acceptance_wrap.py`（22 项，整场跑在临时 HOME）
+- SKILL.md：description 弱化「任务收尾」抢词、A 档第 1/4 条改口径、速览/脚本表/参考更新、version 1.7.0；evals 新增 E7
+- 配套 `my-project-card`：SKILL.md 加归属表指针、`stop_guard.py` reason 加「同一件事只写一处、不要自己删文件」；顺手修其 `description_en` 的 `project: goal` 冒号+空格隐患（11-10 同类事故）
+- 两个技能的 description 已同步进 `.skill-list-cache.json`，备份在本空间 `.workbuddy/backups/`
+
+**挂载与验收**：`settings.json` 是账号级、不进仓库。`hooks.Stop` 现共 3 条（tdrive / `stop_guard.py` / `wrap_cleanup.py`），挂载前备份、挂载后回读校验「非 hooks 键 + SessionStart + SessionEnd + 原 Stop 条目」均未变。**完整可复制的挂载命令在 `references/wrap-routing.md`「生效前提」**（别在 changelog 里再存一份）；改完 hooks 不热加载，须重启或在 `/hooks` 面板审阅。
+- `my-project-card/scripts/acceptance.py` 41/41、`scripts/acceptance_wrap.py` 22/22 通过；两技能 frontmatter 9 项齐全、description 与路由缓存一致、无「冒号+空格」。
+- `py_compile` 四个脚本通过；真实 hook 命令喂空输入 `{}` → exit 0、stdout/stderr 均 0 字节（hook 协议不脏）。
+- 交付前必跑 `verify_sync.py`（本机 / 仓库 / `origin/main` 全技能一致，exit 0）。
+
+**本机环境**：三个 Python 都没装 PyYAML，frontmatter 改用等价的 plain-scalar 严格检查（重点复现「冒号+空格」事故），别再花时间找解析器。
