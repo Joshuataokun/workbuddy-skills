@@ -25,10 +25,12 @@ target first」的各个条目里；这里把它收成一条可执行的顺序�
 
 ## 1. 第一步：分型（零依赖，不需要 REA）
 
+在技能根目录执行；别的工作目录下请用脚本的绝对路径：
+
 ```bash
-python scripts/pe_triage.py "<绝对路径/app.exe>"            # 人读摘要
-python scripts/pe_triage.py "<绝对路径/app.exe>" --json     # 完整 JSON
-python scripts/pe_triage.py "<绝对路径/app.exe>" --out <新文件.json>
+python scripts/pe_triage.py "<目标.exe 的绝对路径>"            # 人读摘要
+python scripts/pe_triage.py "<目标.exe 的绝对路径>" --json     # 完整 JSON
+python scripts/pe_triage.py "<目标.exe 的绝对路径>" --out <新文件.json>
 ```
 
 脚本只用 Python 标准库，读 DOS/PE 头、节表、数据目录、导入表、
@@ -59,7 +61,7 @@ Authenticode 表位置、各节熵与字节标记，输出分两部分：
 | `native` | 第 3 节通用证据；要函数级伪代码再走第 4 节 | 原生 C/C++/汇编；无引擎时只能给静态事实 |
 | `dotnet` | `rea inspect-managed-artifact <path>`、`rea inspect-managed-members <path>`、`rea compare-managed-members ...` | PE/CLI 元数据、类型/方法、`ldstr` 字面量；本机 `rea-dotnet-static` 可用 |
 | `pyinstaller` | `rea inspect-artifact <path> --detail summary --evidence_output <新文件>` | CArchive 才是应用层，bootloader 只是原生前缀；解出的 `.pyc` 用 `rea inspect-python-pyc` |
-| `electron` | 先取 ASAR/资源，再 `rea analyze-javascript-application <解包目录> --json` | 看 JS 层，不要在原生壳里找业务逻辑 |
+| `electron` | 先取 ASAR/资源，再 `rea analyze-javascript-application <解包目录> --format json` | 看 JS 层，不要在原生壳里找业务逻辑 |
 | `go` / `rust` | `rea inspect-go-binary` / `rea inspect-rust-binary` | 读内嵌构建与依赖元数据（缺失 ≠ 不是 Go/Rust） |
 | `deno` / `bun` | `inspect-artifact`（v62 描述的新载体） | 6.8.0 支持有限，先跑 CLI 看返回，不要预设结论 |
 | `installer` | `rea inspect-artifact ...` | NSIS / Inno Setup：先列安装包内容，再决定对哪个成员深入分析 |

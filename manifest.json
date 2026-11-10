@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-10 11:14:20",
+  "synced_at": "2026-11-10 11:17:56",
   "skills_count": 12,
-  "total_bytes": 1662673,
+  "total_bytes": 1662778,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -70,7 +70,7 @@
       "dir": "reverse-engineer-anything",
       "source": "local",
       "files": 11,
-      "bytes": 265195,
+      "bytes": 265300,
       "sha256_of_manifest": "8c6bb08e4b55acf7"
     },
     {
