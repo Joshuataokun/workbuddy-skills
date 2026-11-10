@@ -2,10 +2,10 @@
 name: workspace-converge
 display_name: 空间收敛
 display_name_en: Workspace Converge
-description: 空间治理与收尾清理。收尾时刻由 Stop hook 自动按白名单清理本轮新建的中间产物（首次 dry-run 出清单、之后自动删并留台账，交付物、大文件、被引用一律不删）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→坑体检→收敛记录）。含防误删、防记忆污染、防路径失效、止损三条款；归档隔离单元带 3 天 TTL，再次运行收敛时自动释放已过期的垃圾类文件（记忆快照与交付物永不自动删）。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损、到期清理、TTL 时使用。
-description_zh: 空间治理与收尾清理。Stop hook 自动按白名单清本轮中间产物（首次 dry-run 出清单、之后自动删并留台账）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、止损三条款；归档带 3 天 TTL。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损、到期清理、TTL 时使用。
-description_en: Workspace governance and end-of-turn cleanup. A Stop hook automatically removes this turn's intermediate artifacts from a narrow allowlist - first run is a dry-run checklist, later runs delete with sha256 backup and ledger, and deliverables, large or referenced files are always pinned. Tier B runs on converge / compress memory / trim scripts - snapshot with md5 verification, checklist for approval, compress MEMORY.md under 3000 chars with five-way verification, archive old logs and draft scripts, write a convergence record. Guardrails against wrongful deletion, memory contamination, stale paths, and repeated failed attempts. Quarantine units carry a 3-day TTL. Not for pure Q&A, concept explanations, or read-only analysis. Use when the user mentions converge, wrap up, compress space memory, trim scripts, clean intermediate artifacts, stop-loss, expiry cleanup, or TTL.
-version: 1.7.0
+description: 空间治理与收尾清理。收尾时刻由 Stop hook 自动按白名单清理本轮新建的中间产物（首次 dry-run 出清单、之后自动删并留台账，交付物、大文件、被引用一律不删）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」「任务收敛」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→坑体检→收敛记录）。含防误删、防记忆污染、防路径失效、止损三条款；归档隔离单元带 3 天 TTL，再次运行收敛时自动释放已过期的垃圾类文件（记忆快照与交付物永不自动删）。另在阶段边界说「交接」时生成 HANDOVER 会话态快照，压缩后由 SessionStart 注入摘要接上进度。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损、到期清理、TTL、交接、存档、上下文压缩 时使用。
+description_zh: 空间治理与收尾清理。Stop hook 自动按白名单清本轮中间产物（首次 dry-run 出清单、之后自动删并留台账）；用户说「收敛 <空间名>」「压缩记忆」「精简脚本」时做 B 档（快照+md5→清单待确认→压 MEMORY≤3000＋五项核验→旧日志移 archive→草稿脚本移 _archive→收敛记录）。含防误删、防记忆污染、止损三条款；归档带 3 天 TTL。不适用于纯问答、讲概念、只读分析。当用户提到 收敛、收尾、压缩空间记忆、精简脚本和产物、空间整理、清理中间产物、止损、到期清理、TTL、交接、上下文压缩 时使用。
+description_en: Workspace governance and end-of-turn cleanup. A Stop hook automatically removes this turn's intermediate artifacts from a narrow allowlist - first run is a dry-run checklist, later runs delete with sha256 backup and ledger, and deliverables, large or referenced files are always pinned. Tier B runs on converge / compress memory / trim scripts - snapshot with md5 verification, checklist for approval, compress MEMORY.md under 3000 chars with five-way verification, archive old logs and draft scripts, write a convergence record. Guardrails against wrongful deletion, memory contamination, stale paths, and repeated failed attempts. Quarantine units carry a 3-day TTL. HANDOVER snapshots keep in-flight state across compaction. Not for pure Q&A, concept explanations, or read-only analysis. Use when the user mentions converge, wrap up, compress space memory, trim scripts, clean intermediate artifacts, stop-loss, expiry cleanup, TTL, handoff, or context compaction.
+version: 1.8.0
 author: Joshuataokun
 tags: 收敛,收尾,压缩记忆,精简脚本,空间整理,记忆维护,令牌比对,防误删,防污染
 ---
@@ -19,6 +19,8 @@ A 档·收尾（同一个 Stop 时刻）：守卫补卡 → 归属表定唯一�
 B 档·空间收敛（用户说「收敛」）：先量+到期清理 → 快照+md5 → 清单待确认 → 压记忆（原子写）
         → converge.py verify 五项 → 蒸日志（带索引）→ 清草稿脚本 → 搬家后复验 → 报告
 ```
+
+交接（阶段边界，用户说「交接」）：写 HANDOVER → 用户决定何时压缩 → 压缩后/新会话由 SessionStart 注入摘要接上
 
 铁律三句：**候选区可以脏，正式记忆必须干净；拿不准就保留；验钥匙的清单要跑脚本，不许凭记忆列。**
 
@@ -98,6 +100,14 @@ B 档·空间收敛（用户说「收敛」）：先量+到期清理 → 快照+
 29. **首次强制 dry-run**，第二次起才真删；两阶段（冻结清单→按清单删＋删前复核）、路径断言、写 ledger、回读、幂等
 30. **台账不是恢复源**，删除不可逆；3 天窗口内说「保留 <文件>」→ `ttl.py pin <目录> --file <路径>`
 
+## 上下文交接（v1.8.0，细则见 `references/handoff-guide.md`）
+
+31. **压缩不要求换会话**：平台自动压缩后仍在同一任务里；丢的是中间推理、已读文件内容、多步状态、口头偏好和「下一步」。解法是压缩前把会话态落到文件，**不是一句话一个会话**
+32. **HANDOVER 只写卡片里没有的东西**：`<空间>/.workbuddy/HANDOVER.md` 六个固定小节——目标 / 已定口径与结论 / 改过的文件 / 踩过的坑 / 未决问题 / 下一步。后三类之外的结论**只留指针**（见卡片 / MEMORY / 当天日志），不复制内容（收尾归属表：一事实只写一处）
+33. **触发与收口**：用户说「交接」「存档」→ 我写好六项内容，跑 `handoff.py save --space <空间> --content <文件>`（字段校验＋原子写＋更新全局活跃指针），回一句「现在可以压缩了」。**平台压缩由用户决定，我不触发**。任务真正完成说「收交接」→ `handoff.py clear` 归档文档、撤销指针（不删除）
+34. **压缩后怎么接上**：SessionStart 的 `pitfall_inject.py` 顺带注入 HANDOVER 极简摘要（≤220 字符：目标 / 下一步 / 未决数 / 全文路径）；要读全文说「读交接」→ `handoff.py show`。活跃指针只保留最近一份，7 天过期自动不注入。**复用现有 hook，不新增常驻钩子、不碰平台配置**
+35. **时机按阶段边界判，不凭感觉**：研究→方案 / 方案→实施 / 失败换方向 / 里程碑→新工作 适合交接；**实施中途不适合**（变量名、路径、半成品丢了代价高）。完整判据表、什么能存活于压缩、调研出处见 `references/handoff-guide.md`；大工具输出落文件只留指针，从源头少占上下文
+
 ## 脚本
 
 | 脚本 | 用途 |
@@ -108,6 +118,8 @@ B 档·空间收敛（用户说「收敛」）：先量+到期清理 → 快照+
 | `scripts/ttl.py init/backfill/scan/purge/pin` | 隔离区 3 天到期清理，**命令格式见 ttl-guide.md** |
 | `scripts/wrap_cleanup.py` | Stop hook 调用：本轮中间产物只读扫描 → 首次 dry-run → 之后按白名单删（备份+sha256+台账） |
 | `scripts/acceptance_wrap.py` | 上一条的 22 项回归（临时 HOME 里跑，绝不碰真实环境），**改清理规则必跑** |
+| `scripts/handoff.py save/show/clear/summary` | 交接文档写入 / 读全文 / 归档撤销 / 注入摘要 |
+| `scripts/pitfall_inject.py` | SessionStart 注入：8 条坑 ＋ 活跃 HANDOVER 摘要（不新增 hook 条目） |
 
 只依赖标准库。别用肉眼代替——2026-10-29 实测：手工列的 32 个令牌号称零丢失，脚本一跑漏 3 个指针。
 
@@ -116,5 +128,6 @@ B 档·空间收敛（用户说「收敛」）：先量+到期清理 → 快照+
 - `references/wrap-routing.md`：**收尾归属表主本**（唯一落点 / 收尾链 / 删除硬规矩），改规则先读
 - `references/templates.md`：处置表 / 归档索引 / 收敛记录 / 快照 的照抄模板
 - `references/ttl-guide.md`：TTL 全部细则、命令速查、与每周体检 v9.3 的分工（**改 TTL 规则前先读**）
+- `references/handoff-guide.md`：交接细则、阶段边界表、调研出处（**改交接规则前先读**）
 - `references/changelog.md`：版本变更与全部由来（**改规则前先读**）
-- `evals/scenarios.md`：六个验收场景（正常 / 输入不全 / 误用边界 / 误删防护 / 止损 / TTL），**改完必跑**
+- `evals/scenarios.md`：八个验收场景（正常 / 输入不全 / 误用边界 / 误删防护 / 止损 / TTL / 收尾清理 / 交接），**改完必跑**

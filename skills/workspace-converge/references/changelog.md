@@ -129,3 +129,22 @@
 - 交付前必跑 `verify_sync.py`（本机 / 仓库 / `origin/main` 全技能一致，exit 0）。
 
 **本机环境**：三个 Python 都没装 PyYAML，frontmatter 改用等价的 plain-scalar 严格检查（重点复现「冒号+空格」事故），别再花时间找解析器。
+
+## v1.8.0（2026-11-10 深夜）上下文交接
+
+**问题**：复杂任务几轮就触发平台自动压缩，压缩中断对话、且丢中间状态；用户想主动掌握节奏，明确「总不能一句话一个会话吧」。
+
+**本机实测**：会话记录最大 25.4 MB / 4739 行，单会话 22–38 次 compact 标记；平台有 `ContextSummaryAgent` / `compact-summary` 注入 / 会话级 `preMessageCompactPct`，但 **app.asar 里 `PreCompact` 出现 0 次**（无压缩前钩子）；可用 hooks 只有 SessionStart / Stop / SessionEnd；官方文档未公开压缩阈值设置。
+
+**调研**（出处与全文摘要见 `references/handoff-guide.md` 第八节，**勿重复查**）：Claude Code（~95% 自动压缩、`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70`、PreCompact hook、`/compact` 带指令）、OpenAI Codex（服务端 `/responses/compact`、`auto_compact_limit`、大输出落文件只留引用）、Gemini CLI（SNAPSHOT/ROLLING_SUMMARY 节点＋滞回触发）、LangGraph（`trigger=("fraction",0.8)`、`keep` 最近 20 条、`summary_prompt` 保数字人名）、GitHub `affaan-m/everything-claude-code` 的 `strategic-compact` SKILL.md（阶段边界决策表、what survives/lost、真实 token 主信号、工具调用数是弱代理、"把计划写进文件"）。
+
+**共同结论**：主流不靠更频繁压缩，而靠「逻辑边界压缩 + 压缩前把状态写进文件」。平台没有 PreCompact 时，把压缩点交还给人、状态承接交给文件，是同等效果的替代路径。
+
+**用户拍板**：只做方案 A；HANDOVER 落空间内；不做 C（不调平台水位）、不做 B（不加 Stop 水位 hook）、不做 D（不只靠自觉）；不新建技能。
+
+**变更**：
+- 新增 `scripts/handoff.py`（save/show/clear/summary：六字段校验、原子写、全局活跃指针、7 天过期、≤220 字符注入摘要）
+- 扩展 `scripts/pitfall_inject.py`：SessionStart 在坑提醒后追加 `<handoff>` 摘要，**复用现有 hook，不新增条目、不碰平台配置**
+- `references/handoff-guide.md`（权威细则、阶段边界表、调研出处、换机说明）＋ `wrap-routing.md` 归属表加一行（HANDOVER 只放会话态、结论只留指针）
+- SKILL.md 第 31–35 条、description 三处同步加「交接 / 上下文压缩」触发词、v1.8.0；evals 加 E8；templates 加模板
+- 端到端实测 8 项通过（字段校验拒绝缺节、clear 归档不删、撤销指针后不再注入、严格 UTF-8）

@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-10 22:20:39",
+  "synced_at": "2026-11-11 00:08:07",
   "skills_count": 12,
-  "total_bytes": 1713247,
+  "total_bytes": 1738331,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -49,8 +49,8 @@
       "dir": "my-project-card",
       "source": "local",
       "files": 5,
-      "bytes": 76642,
-      "sha256_of_manifest": "c0db6d43bc3a77c6"
+      "bytes": 77174,
+      "sha256_of_manifest": "4a8360a6e3cd8a1e"
     },
     {
       "dir": "ppt-generator-skill__skillhub",
@@ -83,9 +83,9 @@
     {
       "dir": "workspace-converge",
       "source": "local",
-      "files": 13,
-      "bytes": 110080,
-      "sha256_of_manifest": "de619a4205110b37"
+      "files": 15,
+      "bytes": 134632,
+      "sha256_of_manifest": "bf09ed023c3eb7a3"
     }
   ]
 }

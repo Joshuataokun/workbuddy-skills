@@ -11,7 +11,10 @@
 | 换个会话、光看代码推不出来的长期口径与偏好 | 空间 `.workbuddy/memory/MEMORY.md`（≤3000 字符 / ≤70 行） | 收敛 A 档 | **只在出现新口径时**；不为凑格式整篇重写 |
 | 过程、实测数字、提交号、坑明细与场景 | 当天日志 `.workbuddy/memory/YYYY-MM-DD.md` | 收敛 A 档 | 有产出的任务收尾，只写结论不写过程 |
 | 本轮新建的中间产物 | **不写进任何记忆**，只进待删清单和台账 | `wrap_cleanup.py` | Stop 时刻自动，首次 dry-run |
+| 压缩瞬间的会话态（做到哪 / 下一步 / 未决口头事项） | 空间 `.workbuddy/HANDOVER.md`（≤1500 字符，**结论/坑/文件只留指针**） | `workspace-converge/scripts/handoff.py save` | 用户说「交接」/ 阶段边界 |
 | 压缩记忆、归档旧日志/草稿脚本、3 天到期清理、回滚点 | 收敛 B 档 / `ttl.py` | 用户说「收敛 <空间名>」 | 低频，攒够触发条件才做 |
+
+**HANDOVER 是会话级快照，不是长期状态**：长期状态仍只写卡片，HANDOVER 独有的只有「目标 / 未决 / 下一步」三样——恰好是上下文压缩最先丢、卡片里没有的东西。全文路径由 `~/.workbuddy/handoff-active.json` 记录，SessionStart 只注入 ≤220 字符摘要（细则见 `references/handoff-guide.md`）。
 
 **同一件事不许写进两处**。上一轮实测踩过：同一结论同时写进卡片、MEMORY.md、当天日志，等于三份要维护的副本；按上表只写卡片，其余两处最多留一句指针。
 

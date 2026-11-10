@@ -84,3 +84,29 @@ files[]                    path / bytes / sha256 / disposition / reason / delete
 ```
 
 `ttl-refs.txt` 是引用源清单，放 `<空间>/.workbuddy/archive/`，purge 前由助手刷新（导出自动化 prompt 关键词）。
+
+## HANDOVER 模板（v1.8.0）
+
+六个小节标题一字不改，`handoff.py save` 会校验；≤1500 字符。**结论 / 坑 / 文件清单只写指针**，不复制内容（收尾归属表：一事实只写一处）。
+
+```
+## 目标
+<一句话>
+
+## 已定口径与结论
+指针：见卡片 <slug> 主卡 / 空间 MEMORY.md
+
+## 改过的文件
+指针：见当天日志 / git status
+
+## 踩过的坑
+指针：references/pitfalls-INDEX.md / 当天日志
+
+## 未决问题
+- <口头说过、还没落卡的>；没有写「无」
+
+## 下一步
+<压缩后第一件事>
+```
+
+全文模板与阶段边界判据见 `references/handoff-guide.md`。
