@@ -1,0 +1,56 @@
+# 收尾归属表（唯一主本）
+
+> 一个事实只写一处，别处只留指针。改规则只改这一份。
+> 2026-11-11 用户拍板：卸载 workspace-converge，清理／坑提醒／交接全部收编进 `my-project-card`；**只保留卡片技能**。压缩记忆、TTL 到期清理、快照归档那套 B 档不再保留（用户判定压缩上下文无意义）。
+
+## 一张表
+
+| 信息类型 | 唯一落点 | 谁写 | 时机 |
+|---|---|---|---|
+| 项目状态、进度、本轮做完的事、踩过的坑、待办 | 项目卡 `~/.workbuddy/cards/<slug>/`（主卡＋分册＋事件流） | `card.py add` | 每轮收尾（Stop 守卫拦一次补卡） |
+| 换个会话、光看代码推不出来的长期口径与偏好 | 空间 `.workbuddy/memory/MEMORY.md`（≤3000 字符 / ≤70 行） | 卡片技能收尾 | **只在出现新口径时**；不为凑格式整篇重写 |
+| 过程、实测数字、提交号、坑明细与场景 | 当天日志 `.workbuddy/memory/YYYY-MM-DD.md` | 卡片技能收尾 | 有产出的任务收尾，只写结论不写过程 |
+| 本轮新建的中间产物、测试文件 | **不写进任何记忆**，只进待删清单和台账 | `wrap_cleanup.py` | Stop 时刻自动，首次 dry-run |
+| 压缩／重开瞬间的会话态（做到哪 / 下一步 / 未决口头事项） | 空间 `.workbuddy/HANDOVER.md`（≤1500 字符，**结论/坑/文件只留指针**） | `handoff.py save` | 用户说「交接」/ 阶段边界 |
+| 下载的工具、可复用的对话成果 | `~/.workbuddy/shared/`（可执行工具放 `~/.workbuddy/bin/`），登记 `~/.workbuddy/shared/INDEX.md`；卡片「关键位置」只留指针 | 助手收尾时判定并搬 | 出现可复用产物时，一次就够 |
+
+**HANDOVER 是会话级快照，不是长期状态**：长期状态仍只写卡片，HANDOVER 独有的只有「目标 / 未决 / 下一步」三样。全文路径由 `~/.workbuddy/handoff-active.json` 记录，SessionStart 只注入 ≤220 字符摘要（细则见 `references/handoff-guide.md`）。
+
+**公共区只放"下次还会用"的东西**：一次性产物不进；收尾先查 `INDEX.md` 有没有同款，有就复用、不重复下载。清理脚本只删白名单垃圾，**不自动搬文件**——判定和搬运由助手做，避免把半成品当成果。
+
+**同一件事不许写进两处**。实测踩过：同一结论同时写进卡片、MEMORY.md、当天日志，等于三份要维护的副本；按上表只写卡片，其余两处最多留一句指针。
+
+## 收尾链（同一个 Stop 时刻，两个脚本互不耦合）
+
+1. `scripts/stop_guard.py`：当前空间有卡 ＋ 本轮改了文件 ＋ 本轮没写卡 → 输出 `continue:false` 拦一次，把**可直接执行的补卡命令**塞回对话。用户**不需要说「更新卡片」**，守卫挂在全局 hooks 上、不看技能有没有被触发。补完卡第二次自动放行，被提醒后仍没补卡记 `miss`。
+2. `scripts/wrap_cleanup.py`：只读扫描本轮新建的中间产物 → 首次强制 dry-run 出清单 → 第二次起按白名单自动删（单轮 ≤10、删前备份并校验 sha256、写 ledger、幂等）。
+3. 上表第 2、3 行**只在出现新口径或有交付物时写**；纯问答、讲概念、只读分析一律不写记忆。
+
+两个脚本并列挂在 `~/.workbuddy/settings.json` 的 `hooks.Stop`，各自 fail-open、各自有总开关，一个出错不拖累另一个。**不要把它们合成一个脚本**：一个是提示模型补记录，一个是执行不可逆删除，失败模式不同。
+
+`SessionStart` 另挂 `scripts/pitfall_inject.py`：注入跨空间高危坑 ＋ HANDOVER 摘要，只读注入、不写文件、不删东西。
+
+## 删除的硬规矩
+
+- 助手**不自己删文件**，删除只由 `wrap_cleanup.py` 执行；模型最多列清单。
+- 白名单只认：`__pycache__` 等缓存目录内容、`*.pyc/*.pyo/*.tmp`、带 `tmp_/test_/parse_/diag_` 前缀的 json/html/xlsx/log/out。
+- 一律 pin：交付物扩展名、>1MB、被引用、路径越界、`.workbuddy/`、仓库资产、个人目录（Desktop/Downloads/Documents 等）、盘符根、拿不准的。
+- 公共区在 `~/.workbuddy/` 下、不在工作区扫描范围内，脚本扫不到；`no_go()` 也会拦住 HOME 本身。
+- 首次运行**零删除**，只出清单 `<空间>/.workbuddy/archive/wrap-首次清单.md` 并写 `armed: true`；从第二次起才真删。
+- 台账 `<空间>/.workbuddy/archive/wrap-ledger.md`（含 sha256）；备份 `~/.workbuddy/archive/wrap-cleanup/backup/`；判定日志同目录 `wrap.log`。
+- 一键停用：新建空文件 `~/.workbuddy/.wrap-cleanup-off`，删掉即恢复（守卫另有关开 `.stop-guard-off`）。
+- 台账不是恢复源，删除不可逆；本机回收站两条路都被拦，只能从备份目录还原。
+
+## 生效前提
+
+`settings.json` 外部修改**不热加载**，当前会话用启动快照。改完 hooks 要重启 WorkBuddy 或在 `/hooks` 面板审阅。
+
+换机重注册：需要 3 条自定义 hook，全部指向本技能目录（本机 2026-11-11 已挂好）：
+
+```text
+SessionStart  ~/.workbuddy/skills/my-project-card/scripts/pitfall_inject.py
+Stop          ~/.workbuddy/skills/my-project-card/scripts/stop_guard.py
+Stop          ~/.workbuddy/skills/my-project-card/scripts/wrap_cleanup.py
+```
+
+命令形如 `"<python.exe>" "<脚本绝对路径>"`，`matcher: ""`、`timeout: 15`、`metadata.managed_by: "my-project-card"`，与 tdrive 那几条结构保持一致。换机后 Python 路径和账号目录可能不同 → 先照本机已有 hook 的 `python.exe` 路径替换，**别照抄账号名**。改前先备份 `settings.json`；改后回读校验「非 hooks 键、SessionEnd、原有 Stop 条目」都没变，每个脚本只挂 1 条（幂等）。

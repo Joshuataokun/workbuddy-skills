@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""workspace-converge · Stop 时刻清理「本轮新建的中间产物」（A 档第 4 条）
+"""my-project-card · Stop 时刻清理「本轮新建的中间产物」（A 档第 4 条）
 
-用户 2026-11-10 拍板：不合并到卡片技能；收尾走同一个 Stop 时刻；
+2026-11-11 起收敛技能已卸载，本脚本连同坑提醒、交接一起收编进卡片技能。
 清理沿用 TTL 模式——首次强制 dry-run 只出清单，第二次起按白名单自动删、留台账。
 
 护栏（比 ttl.py 更窄，只认明确的临时物）：
@@ -14,13 +14,12 @@
 - 首次运行强制 dry-run（写 armed: true），之后才真删
 - hook 协议：stdout 必须为空、exit 0；所有信息写日志文件；异常一律放行
 
-复用 ttl.py 的 sha256 / collect_refs / referenced / PIN_MARKERS / MAX_PURGE_BYTES，
-不重复造护栏（见 references/changelog.md v1.6.0「不重复造」）。
+复用 guard_common.py 的 sha256 / collect_refs / referenced / PIN_MARKERS / MAX_PURGE_BYTES，
+不重复造护栏；TTL 到期清理那套 B 档逻辑没有搬过来。
 """
 from __future__ import annotations
 
 import datetime as dt
-import importlib.util
 import io
 import json
 import os
@@ -29,10 +28,7 @@ import shutil
 import sys
 from collections import deque
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-_spec = importlib.util.spec_from_file_location("ttl_engine", os.path.join(HERE, "ttl.py"))
-ttl = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(ttl)
+import guard_common as ttl
 
 # 验收时用 WRAP_CLEANUP_HOME 指向临时目录，绝不碰真实卡库/台账
 HOME = os.path.abspath(os.environ.get("WRAP_CLEANUP_HOME") or os.path.expanduser("~"))

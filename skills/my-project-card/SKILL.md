@@ -2,12 +2,12 @@
 name: my-project-card
 display_name: 我的项目卡片
 display_name_en: My Project Card
-description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
-description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
-description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, resume in a fresh session, or create a sub-card. This writes records into the project card; it does not modify skill files.
-version: 2.1.2
+description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
+description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
+description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, resume in a fresh session, or create a sub-card. End of each turn automatically prompts a card update, cleans this turn's intermediate artifacts from a narrow allowlist, and registers reusable outputs into a shared area - no need to ask for an update every time. Also triggered by converge, wrap up, clean intermediate artifacts, clean junk, tidy the workspace, handoff, or read handoff. This writes records into the project card and does the workspace wrap-up; it does not modify skill files and does not compact context.
+version: 2.2.0
 author: Joshuataokun
-tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
+tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑,收敛,收尾,清理中间产物,交接,公共区
 ---
 
 # 我的项目卡片
@@ -36,6 +36,8 @@ tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,�
 <工作区>/.workbuddy/PROJECT_CONTEXT.md   自动生成的简报，只读
 ~/.workbuddy/cards/.stop-guard.log      守卫判定日志（不属于任何一张卡）
 ~/.workbuddy/cards/.stop-guard-off      守卫总开关，文件存在即停用
+~/.workbuddy/shared/INDEX.md            跨空间可复用成果索引（不重复下载）
+~/.workbuddy/bin/                      跨空间可执行工具
 ```
 
 **拆分口诀**：换一个工作面就说不通 → 进分册；放哪儿都成立 → 留主卡。
@@ -102,13 +104,19 @@ python $CARD audit --slug poker-game
 
 ## 五、开工与收尾的固定动作
 
+**新会话第一句**（照抄即可，把 <任务> 换成实际要干的事）：
+
+    阅读项目空间卡片，接着执行 <任务>
+
+这句会走 `resume` 读卡 ＋ 自动核对地面真相。**新会话必须选同一个工作区目录**，否则卡片和 HANDOVER 都对不上（最易翻车一步）。
+
 **开工**（每个会话第一件事）：
 
 0. **重开会话 / 压缩后续接**（三步，顺序不能换）：
    ① `resume` 读卡。检测到工作区有 `.workbuddy/HANDOVER.md` 且 7 天内更新过时，简报顶部与 `resume` 输出会**自动**打出「⚠ 重开会话续接」提示（card.py 确定性输出，不靠记规则）；
    ② **读 HANDOVER 全文**——SessionStart 注入的只是 ≤220 字符摘要，HANDOVER 记的是「做到哪 / 下一步 / 未决口头事项」，属会话态，不是卡片里的长期状态；
    ③ **核对地面真相**：相关文件还在不在、`git status`、跑一遍验证，再动手。简报告诉你「当时站在哪」，实测才告诉你「现在实际如何」。
-   卡片里**不要重复**抄这些内容；何时压缩、何时重开的判据表见 `workspace-converge/references/handoff-guide.md` 第七节（唯一主本）
+   卡片里**不要重复**抄这些内容；何时压缩、何时重开的判据表见 `references/handoff-guide.md` 第七节（唯一主本）
 
 1. `resume` 看三块：**简报顶部「⚠ 开工先读：坑与已排除方案」**（已从主卡和各分册自动抽取，涉及对应场景必须先遵守）、谁在动哪个工作面、待办与待确认；`resume` 会往事件流写一条 `open` 留痕，不改卡片内容；
 2. 简报里显示某个工作面正被别人占着 → 先跟用户说一声，或换一条线；
@@ -124,7 +132,7 @@ python $CARD audit --slug poker-game
 
 ### 强制收尾（v2.1.0 起，不靠自觉）
 
-`resume` 的 `open` 留痕让用户级 `Stop` 守卫知道「这个会话碰过卡片」。守卫**不依赖技能有没有被触发**：只要当前工作区有卡，每次助手答完都会检查，四个条件同时成立才拦一次收工，把补卡命令塞回对话：
+`resume` 的 `open` 留痕让用户级 `Stop` 守卫知道「这个会话碰过卡片」。守卫**不依赖技能有没有被触发、也不需要用户说一句「更新卡片」**：只要当前工作区有卡，每次助手答完都会检查，四个条件同时成立才拦一次收工，把可直接执行的补卡命令塞回对话：
 
 1. 当前 `cwd` 能对应到一张已建的卡；
 2. 本轮（最后一条用户消息之后）确实动了文件；
@@ -137,7 +145,7 @@ python $CARD audit --slug poker-game
 - **停用**：在 `~/.workbuddy/cards/` 建一个空的 `.stop-guard-off` 文件，守卫立即静默放行；删掉即恢复。判定日志在 `~/.workbuddy/cards/.stop-guard.log`。
 - **fail-open**：找不到卡、没有 transcript、切不出本轮边界、本轮纯只读、脚本自身出错，一律放行。守卫宁可漏拦，绝不把会话卡住。
 - **生效前提**：hooks 是用户级全局配置，改完 `settings.json` **不会热加载**，要重启 WorkBuddy 或在 `/hooks` 面板审阅后才生效；本机 5 张卡、所有空间都会受影响。
-- **收尾归属**：`workspace-converge/references/wrap-routing.md` 是主本——项目状态写卡片，长期口径写空间 `MEMORY.md`，过程写当天日志，中间产物由 Stop hook 的清理脚本处理。**同一件事只写一处**；助手不自己删文件。
+- **收尾归属**：`references/wrap-routing.md` 是主本——项目状态写卡片，长期口径写空间 `MEMORY.md`，过程写当天日志，中间产物由 Stop hook 的清理脚本处理。**同一件事只写一处**；助手不自己删文件。
 
 ## 六、多会话并发的三条硬规矩
 
@@ -153,3 +161,22 @@ python $CARD audit --slug poker-game
 - **别把推测写成确认**。念一遍：这句话能指回一句用户原话或一份文件吗？指不回就 `--pending`。
 - **别手改卡片文件**。要改就走 `revise`，手改会让事件流和失效链断掉。
 - **别为应付守卫硬凑条目**。本轮真没产生需要留存的结论，说明理由收工即可；写套话比漏记更坏。
+
+## 八、自动收尾、清理与公共区域（v2.2.0，不用用户开口）
+
+三件事都挂在全局 hooks 上，**不看技能有没有被触发**，用户不必每轮说「更新卡片」：
+
+1. **补卡**：`scripts/stop_guard.py`（Stop）。本轮改了文件且卡片没写入 → 拦一次，把可直接执行的 `add` 命令塞回对话；补完第二次自动放行。纯问答、只读取、查资料不拦，也不硬凑条目。
+2. **清垃圾**：`scripts/wrap_cleanup.py`（Stop）。只删本轮新建的白名单垃圾（`__pycache__` 内容、`*.pyc/*.pyo/*.tmp`、`tmp_/test_/parse_/diag_` 前缀的 json/html/xlsx/log/out）；交付物、大文件、被引用、路径越界、个人目录一律 pin。首次强制 dry-run 零删除，之后自动删、单轮 ≤10、删前备份并校验 sha256、写台账。助手**不自己删文件**。
+3. **坑与交接注入**：`scripts/pitfall_inject.py`（SessionStart）注入跨空间高危坑 ＋ HANDOVER 摘要，只读注入、不写不删。
+
+**公共区域**（可复用成果不重复下载）：
+
+- 下载的工具放 `~/.workbuddy/bin/`，对话产生的可复用成果放 `~/.workbuddy/shared/`，两者都跨空间共用。
+- 收尾时先读 `~/.workbuddy/shared/INDEX.md`：已有同款就直接用，别再下一遍。
+- 判定为可复用 → 搬进公共区、在 `INDEX.md` 登记「文件名 / 来源空间 / 用途 / 日期」，并在卡片「关键位置」留一条指针。**一次性产物不进公共区**。
+- 清理脚本只删垃圾、不自动搬文件；判定和搬运由助手做，避免把半成品当成果。
+
+删不掉、拿不准、被引用的一律保留。细则与换机重注册见 `references/wrap-routing.md`（唯一主本）。
+
+改完 hooks **不会热加载**，要重启 WorkBuddy 或在 `/hooks` 面板审阅。

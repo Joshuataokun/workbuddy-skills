@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""HANDOVER · 上下文压缩前后的会话态承接（workspace-converge v1.8.0）
+"""HANDOVER · 上下文压缩前后的会话态承接（my-project-card 收编，原 workspace-converge v1.8.0）
 
 设计要点：
 - 平台自动压缩后仍在同一会话，但中间推理 / 已读文件内容 / 多步状态 / 口头偏好会丢。

@@ -1001,7 +1001,7 @@ def handoff_hint(workspace: str) -> list:
     return [
         "读全文：`.workbuddy/HANDOVER.md`（SessionStart 只注入 ≤220 字符摘要）",
         "顺序：resume 读卡 → 读 HANDOVER 全文 → 核对地面真相（文件在不在 / git status / 跑验证）→ 再动手",
-        "何时压缩、何时重开：见 `workspace-converge/references/handoff-guide.md` 第七节",
+        "何时压缩、何时重开：见 `~/.workbuddy/skills/my-project-card/references/handoff-guide.md` 第七节",
     ]
 
 

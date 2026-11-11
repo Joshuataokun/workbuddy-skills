@@ -184,12 +184,12 @@ def wrote_card_this_turn(slug: str, turn_iso: str) -> bool:
 def reason_text(slug: str, cwd: str) -> str:
     return (
         "本轮在「%s」这张项目卡对应的空间里改了文件，但卡片事件流没有本轮的写入记录。"
-        "收工前请补一条：把 <本轮结论> 换成实际做完的事或新定的口径，用命令 "
+        "守卫自动触发，用户不必说「更新卡片」。收工前请补一条：把 <本轮结论> 换成实际做完的事或新定的口径，用命令 "
         "python \"%s\" add --slug %s --section 进度 --text \"<本轮结论>\" "
         "--workspace \"%s\" 写进卡片（分册改动加 --book 和 --section 已完成）。"
         "只写事实，不写套话和推测。若本轮确实只是查资料、试跑或纯问答、没产生需要留存的结论，"
         "直接说明一句理由即可收工，不必硬凑一条。"
-        "收尾按 workspace-converge/references/wrap-routing.md 的归属表执行：同一件事只写一处；"
+        "收尾按 ~/.workbuddy/skills/my-project-card/references/wrap-routing.md 的归属表执行：同一件事只写一处；"
         "本轮中间产物由 Stop hook 的清理脚本处理，不要自己删文件。"
     ) % (slug, CARD_PY, slug, cwd)
 
