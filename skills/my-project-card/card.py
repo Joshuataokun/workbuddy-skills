@@ -735,6 +735,11 @@ def cmd_resume(a) -> None:
         if ln.startswith("updated:"):
             upd = ln.split(":", 1)[1].strip().strip('"')
     print("=== %s · %s ===" % (slug, ("更新于 " + upd) if upd else "日期未记录"))
+    handoff = handoff_hint(cwd)
+    if handoff:
+        print("\n▌重开会话续接（检测到 HANDOVER）")
+        for h in handoff:
+            print("  · " + h)
     if upd:
         try:
             days = (now_dt() - datetime.strptime(upd, "%Y-%m-%d")).days
@@ -975,6 +980,31 @@ def grab_section(path: str, title_keys: tuple, limit: int = 3, width: int = 100)
     return out
 
 
+HANDOVER_TTL_DAYS = 7
+
+
+def handoff_hint(workspace: str) -> list:
+    """重开会话续接的确定性提示：HANDOVER 存在且 7 天内更新过时输出。
+
+    只判文件存在与 mtime，不读内容、不写任何文件。目的是把
+    「先读全文 → 核对地面真相」摆到模型眼前，而不是只写在 SKILL.md 里
+    靠模型自觉（instruction-gated 的召回实测时灵时不灵）。
+    """
+    p = os.path.join(os.path.abspath(workspace), ".workbuddy", "HANDOVER.md")
+    if not os.path.isfile(p):
+        return []
+    try:
+        if time.time() - os.path.getmtime(p) > HANDOVER_TTL_DAYS * 86400:
+            return []
+    except OSError:
+        return []
+    return [
+        "读全文：`.workbuddy/HANDOVER.md`（SessionStart 只注入 ≤220 字符摘要）",
+        "顺序：resume 读卡 → 读 HANDOVER 全文 → 核对地面真相（文件在不在 / git status / 跑验证）→ 再动手",
+        "何时压缩、何时重开：见 `workspace-converge/references/handoff-guide.md` 第七节",
+    ]
+
+
 def refresh_mirror(store: str, slug: str, workspace: str) -> str:
     mp = main_path(store, slug)
     books = list_books(store, slug)
@@ -989,6 +1019,11 @@ def refresh_mirror(store: str, slug: str, workspace: str) -> str:
     if warn:
         add += ["## ⚠ 开工先读：坑与已排除方案", ""]
         add += ["- " + w for w in warn[:6]]
+        add += [""]
+    handoff = handoff_hint(workspace)
+    if handoff:
+        add += ["## ⚠ 重开会话续接（检测到 HANDOVER）", ""]
+        add += ["- " + h for h in handoff]
         add += [""]
     add += ["## 分册索引", ""]
     if books:

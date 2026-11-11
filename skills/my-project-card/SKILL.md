@@ -2,10 +2,10 @@
 name: my-project-card
 display_name: 我的项目卡片
 display_name_en: My Project Card
-description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
-description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
-description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, or create a sub-card. This writes records into the project card; it does not modify skill files.
-version: 2.1.1
+description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
+description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。这是往项目卡里写记录，不是修改技能文件，也不是空间收敛。
+description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, resume in a fresh session, or create a sub-card. This writes records into the project card; it does not modify skill files.
+version: 2.1.2
 author: Joshuataokun
 tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑
 ---
@@ -104,7 +104,11 @@ python $CARD audit --slug poker-game
 
 **开工**（每个会话第一件事）：
 
-0. 若当前工作区有 `.workbuddy/HANDOVER.md` 且 7 天内更新过 → **先读全文**。SessionStart 注入的只是 ≤220 字符摘要；HANDOVER 记的是「压缩瞬间做到哪 / 下一步 / 未决口头事项」，属于会话态，不是卡片里的长期状态。细则见 `workspace-converge/references/handoff-guide.md`。卡片里**不要重复**抄这些内容
+0. **重开会话 / 压缩后续接**（三步，顺序不能换）：
+   ① `resume` 读卡。检测到工作区有 `.workbuddy/HANDOVER.md` 且 7 天内更新过时，简报顶部与 `resume` 输出会**自动**打出「⚠ 重开会话续接」提示（card.py 确定性输出，不靠记规则）；
+   ② **读 HANDOVER 全文**——SessionStart 注入的只是 ≤220 字符摘要，HANDOVER 记的是「做到哪 / 下一步 / 未决口头事项」，属会话态，不是卡片里的长期状态；
+   ③ **核对地面真相**：相关文件还在不在、`git status`、跑一遍验证，再动手。简报告诉你「当时站在哪」，实测才告诉你「现在实际如何」。
+   卡片里**不要重复**抄这些内容；何时压缩、何时重开的判据表见 `workspace-converge/references/handoff-guide.md` 第七节（唯一主本）
 
 1. `resume` 看三块：**简报顶部「⚠ 开工先读：坑与已排除方案」**（已从主卡和各分册自动抽取，涉及对应场景必须先遵守）、谁在动哪个工作面、待办与待确认；`resume` 会往事件流写一条 `open` 留痕，不改卡片内容；
 2. 简报里显示某个工作面正被别人占着 → 先跟用户说一声，或换一条线；

@@ -148,3 +148,14 @@
 - `references/handoff-guide.md`（权威细则、阶段边界表、调研出处、换机说明）＋ `wrap-routing.md` 归属表加一行（HANDOVER 只放会话态、结论只留指针）
 - SKILL.md 第 31–35 条、description 三处同步加「交接 / 上下文压缩」触发词、v1.8.0；evals 加 E8；templates 加模板
 - 端到端实测 8 项通过（字段校验拒绝缺节、clear 归档不删、撤销指针后不再注入、严格 UTF-8）
+
+## v1.8.1（2026-11-11）压缩 vs 重开决策表 + 卡片确定性续接
+
+**用户拍板**：按上一轮判断优化卡片技能。主路线＝「交接 → 重开新会话 → 卡片 resume 续接」；压缩只作同一子任务健康续跑的次要路线；**不往收敛技能加"压缩上下文对话"能力**（平台行为，技能无接口；awesome-copilot PR #5097 一手反证：额外规则与 harness 内置 compaction/memory 冲突）。
+
+**变更**：
+- `handoff-guide.md` 第七节扩为**唯一主本**：压缩 vs 重开决策表、重开后三步标准动作（resume 读卡 → 读 HANDOVER 全文 → 核对地面真相）、退化症状优先于「看到将满」、与止损三条款对齐、2026-11-11 新增一手证据（Anthropic best-practices / Letta Recovery-Bench / PR #5097 / Context Hygiene Checklist），标注勿重复查
+- `my-project-card` 2.1.1 → **2.1.2**：`card.py` 新增 `handoff_hint()`（检测 `<空间>/.workbuddy/HANDOVER.md` 且 7 天内），在**简报**与 **`resume` 输出**各确定性加一段「重开会话续接」提示——不靠模型自觉；开工第 0 步扩为三步；description 三处同步加「重开会话接着干 / 新会话继续」口语
+- 41 项回归全过；两技能只留指针，决策表只写一份
+
+**边界**：不改平台配置、不加 hook、不新建技能、不触发平台压缩。
