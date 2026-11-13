@@ -4,26 +4,27 @@
 target first」的各个条目里；这里把它收成一条可执行的顺序：**先分型 → 再取静态
 证据 → 最后才考虑深度反编译**。所有命令都只读文件，不执行目标。
 
-## 0. 三条硬边界（本机 2026-11-13 复核：`rea` 仍 6.8.0）
+## 0. 三条硬边界（本机 2026-11-13 升级完成后复核）
 
-1. **本机 `rea` CLI 是 6.8.0**（`command -v rea` 定位，`rea --version` 确认），
-   而本技能文档同步自 GitHub main（frontmatter 仍写 v62，但 11-11 内容又变，
-   11-13 按 blob 哈希再同步）。`rea --help` 才是本机真实命令清单；
-   文档里出现、6.8.0 里没有的操作不要调。当前已知缺（11-13 逐条核对）：
-   `audit-release-exposure`、`inspect-binary-hardening`、
-   `inspect-elf-unwind-ranges`、`inspect-kernel-build-config`、
-   `inspect-native-initializers`、`inspect-windows-shortcut`，
-   以及 desktop build-computer 系列。npm 已发 6.9.0，本机未升级，别把新文档的
-   能力当成已有的；调用前用 `rea <command> --help` 确认，不存在就如实报缺口。
-2. **MCP 会话不一定连着 REA**。WorkBuddy 会话里若没有 `open_binary` 等工具，
-   走 CLI 的 target-free 命令（下面第 3 节），不要假装 MCP 结果存在。
-   CLI 里也没有 `open-binary` 子命令，那是 MCP 工具名。
-3. **深度反编译需要原生引擎**。本机 `rea providers` 只列出
-   `rea-dotnet-static`、`sqlite`、`rea-artifact-graph`（部分可用）；直接跑
-   `rea analyze <path>` 会返回 `provider_unavailable`。不要擅自安装
-   Ghidra / Hopper / IDA，也不要擅自 `rea update` 到 6.9.0；先报告用户，等明确授权。
-   运行时观察（启动/附加/插桩）同样要单独授权，见
+1. **本机 `rea` CLI 已是 6.9.0**（npm `latest` 与 GitHub main `package.json` 一致；
+   Node 24.22.2 满足 engines）。11-11 文档新加的 `audit-release-exposure`、
+   `inspect-binary-hardening`、`inspect-elf-unwind-ranges`、
+   `inspect-kernel-build-config`、`inspect-native-initializers`、
+   `inspect-windows-shortcut` 在 6.9.0 的 `rea --help` 里**全部存在**；
+   仍不存在的是 desktop build-computer 系列（需单独服务）和 `open-binary`
+   （MCP 工具名，CLI 没有子命令）。调用前照样用 `rea <command> --help` 确认。
+2. **MCP 已注册但需用户激活**：`rea setup --client workbuddy --yes` 已写好
+   `~/.workbuddy/mcp.json`，`env` 带 `JAVA_HOME`、`GHIDRA_INSTALL_DIR`、
+   `REA_JADX_MCP_JAR`。WorkBuddy 要在连接器管理页点「信任」并重启，REA 工具
+   才会挂进会话；没挂上时走 CLI 的 target-free 命令（第 3 节），别假装 MCP 结果存在。
+3. **深度引擎已装好**：Ghidra **12.1.4**（`GHIDRA_INSTALL_DIR=~/.workbuddy/binaries/ghidra/ghidra_12.1.4_PUBLIC`）
+   ＋ Temurin JDK **21.0.13+9**（`JAVA_HOME=~/.workbuddy/binaries/jdk21-rea/jdk-21.0.13+9`）。
+   `rea doctor` 的 9 项 `ghidra-*` 检查全 ok；实测 `rea analyze "C:\Windows\System32\cmd.exe" --provider ghidra --format json`
+   47 秒返回 Evidence（provider 为 Ghidra 12.1.4，含段表、过程数、字符串数）。
+   走第 4 节不再需要额外授权装引擎；但**运行时观察（启动/附加/插桩）仍要单独授权**，见
    [runtime-observation.md](runtime-observation.md)。
+   本机另装有 IDA 7.6，但 REA 的 IDA provider 只适配已有 IDA MCP（上游插件要求
+   IDA Pro 8.3+ 或 9.0+），7.6 接不进；Hopper 官方自动安装是 macOS 专用，Windows 不可用。
 
 ## 1. 第一步：分型（零依赖，不需要 REA）
 
@@ -99,18 +100,24 @@ rea inspect-managed-members  "<path>" --format json   # .NET 成员与字面量
 口径：导入表是**声明**，不是实际调用；安全目录缺失是**该表缺席**，
 不证明镜像从别处没带签名；CFG/ASLR 标志是链接器声明，不证明运行时生效。
 
-## 4. 深度分析（可选，需引擎）
+## 4. 深度分析（Ghidra 12.1.4 已就绪）
 
 ```bash
-rea providers                       # 先看有哪些 provider 真的可用
-rea analyze "<path>" --provider <id>
-rea function "<path>" <address>     # 或 rea decompile / instructions / xrefs / search
+# 已实测：47 秒返回合法 Evidence，provider = ghidra 12.1.4
+rea analyze "C:\Windows\System32\cmd.exe" --provider ghidra --format json
+
+# 函数级查询：先各自 --help 核对参数，或用 REA_ANALYSIS_PROVIDER=ghidra 固定引擎
+rea function "<path>" <address> --format json
+rea decompile "<path>" <address> --format json
 ```
+
+`rea analyze` 会拉起 Ghidra headless（本机实测 47 秒完成），返回里的
+`analysis_profile.parameters.upstream_analysis_profile.provider` 应为
+`{"id":"ghidra","version":"12.1.4"}`；依赖有问题时用 `rea doctor` 看 9 项
+`ghidra-*` 检查。Ghidra 会话取消会丢弃临时数据库与注释，不要中断长任务。
 
 MCP 已连接时，等价路线是 `open_binary` → `binary_overview` →
 `analyze_function` / `decompile` / `xrefs`；会话没有这些工具就别调用。
-本机当前 `rea analyze` 返回 `provider_unavailable`（已实测），所以这一节属于
-"用户授权安装引擎之后"的步骤，不是默认步骤。
 
 静态分析不能证明执行行为。需要"程序实际做了什么"时，必须单独授权并限定目标，
 见 [runtime-observation.md](runtime-observation.md) 与

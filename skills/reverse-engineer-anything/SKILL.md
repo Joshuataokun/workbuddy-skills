@@ -624,10 +624,13 @@ history in a new process. Retention is bounded and is not automatic persistence.
 
 This copy tracks `.agents/skills/reverse-engineer-anything` on `morluto/rea`
 main (frontmatter version "62"; content re-synced 2026-11-13, upstream
-SKILL.md blob `baea9f52`) while the installed engine is `rea` / `rea-agents`
-6.8.0. npm released 6.9.0 afterwards, but this machine has not been upgraded.
-The skill text can therefore name operations the installed release does not
-have. Before calling any tool:
+SKILL.md blob `baea9f52`). The installed engine was upgraded to `rea` /
+`rea-agents` 6.9.0 on 2026-11-13, matching npm latest and GitHub main.
+Ghidra 12.1.4 plus Temurin JDK 21.0.13+9 are installed and `rea doctor`
+reports every `ghidra-*` check healthy; `rea analyze <path> --provider ghidra`
+was verified against a local PE. The WorkBuddy MCP registration lives in
+`~/.workbuddy/mcp.json` and needs a client-side trust/restart before MCP tools
+appear in a session. Before calling any tool:
 
 - Prefer the local CLI: locate it with `command -v rea` and confirm
   `rea --version`. `rea --help` is the authoritative command list; the CLI has
@@ -636,18 +639,21 @@ have. Before calling any tool:
   this session. When they are absent, use the target-free CLI commands in
   [references/windows-exe.md](references/windows-exe.md) and keep complete
   inline Evidence.
-- Operations added after 6.8.0 (`audit_release_exposure`,
+- The 11-11 additions (`audit_release_exposure`,
   `inspect_native_initializers`, `inspect_elf_unwind_ranges`,
   `inspect_kernel_build_config`, `inspect_windows_shortcut`,
-  `inspect_binary_hardening`, and the desktop build-computer tools) are not in
-  this installation. Do not invent a call: report the capability gap and
-  continue with supported evidence.
+  `inspect_binary_hardening`) are present in 6.9.0. Still absent: the desktop
+  build-computer service tools, and `open-binary` as a CLI subcommand (it is
+  an MCP tool name). Check `rea --help` before invoking anything new.
 - Upstream can change files without raising the frontmatter version (11-11
   changed SKILL.md and four references while version stayed "62"). When
   checking for updates, compare GitHub blob hashes, not the version string.
-- Deep native decompilation needs a configured provider (`rea providers`,
-  `rea doctor`). Do not install Ghidra/Hopper/IDA, upgrade `rea` to 6.9.0, or
-  start runtime observation without the user's explicit approval.
+- Deep native decompilation now runs through `provider_id: "ghidra"` (CLI:
+  `--provider ghidra`). Verify with `rea doctor` when it fails. IDA 7.6 is
+  installed locally but cannot serve this provider: the upstream IDA MCP
+  plugins require IDA Pro 8.3+ / 9.0+. Hopper auto-install is macOS-only.
+  Runtime observation (launch/attach/instrument) still needs separate user
+  approval; see [runtime-observation.md](references/runtime-observation.md).
 - `references/windows-exe.md` and `scripts/pe_triage.py` are local additions,
   not upstream files. Re-syncing from upstream replaces the other files;
   reapply the description change, the Windows PE route entry, the guide link
