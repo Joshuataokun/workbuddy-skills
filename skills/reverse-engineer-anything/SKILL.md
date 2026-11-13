@@ -17,9 +17,9 @@ readiness or provider commands.
 
 Installing this skill supplies instructions; it does not register the REA MCP
 server, install analysis engines, or add tools to an already-running agent.
-The exception is a Claude Code or Codex plugin install: the plugin bundles
-this skill and registers its own `rea` server, outside the state that
-`rea setup` and `rea doctor` manage.
+The exception is a Claude Code, Codex, or Cursor Marketplace plugin install:
+the plugin bundles this skill and registers its own `rea` server, outside the
+state that `rea setup` and `rea doctor` manage.
 
 If REA tools are available and their registration is not known to be stale,
 proceed directly to the target. Do not run diagnostics or setup before every
@@ -178,6 +178,7 @@ explicit path or endpoint and do not need it.
   Facts retain all-recorded-events-before-selection scope. Other qlog layouts
   and PCAP correlation are unsupported.
 - User-owned Electron runtime already open: `list_electron_targets`. Before an electron-main Inspector attempt, check packaged fuses with `inspect_electron_fuses`; disabled `EnableNodeCliInspectArguments` means the app ignores `--inspect`.
+- Shipped application exposure for a local `.app`, install directory, ASAR, or executable: `audit_release_exposure` / `rea audit-release-exposure`. Each check has a stable id, a status, and fixed remediation. Unknown and unassessed checks stay in the report. This does not establish that an application is secure. Credential-marker hits report the rule id and location only. See [release exposure](https://github.com/morluto/rea/blob/main/docs/release-exposure.md).
 - Packet-field discovery: `inspect_packet_fields` searches installed protocols
   and field names/types before choosing fields for `inspect_packet_capture`.
   Query/page the relevant records; registrations do not establish observed traffic.
@@ -221,8 +222,10 @@ explicit path or endpoint and do not need it.
   See the [APK signature guide](https://github.com/morluto/rea/blob/main/docs/apk-signature.md).
 - Explicit local EVM bytecode carrier: `inspect_evm_interface` with caller-selected
   `raw` or `hex` encoding. The owned worker deadline is `timeout_ms` (default
-  30000 ms, range 1..2147483647, next call). It does not raise the fixed byte,
-  address-space, or CPU allowances. Preserve carrier/decoded digests and treat selectors,
+  30000 ms, range 1..2147483647, next call). Select byte, address-space and CPU
+  allowances separately through `producer_limits`; tighter inherited OS limits
+  remain enforced, and the 256 MiB worker heap is independent. Preserve
+  carrier/decoded digests and treat selectors,
   argument strings and mutability as inferred candidates; this performs no chain
   lookup or target execution. For the complete inferred interface without hex or
   duplicate stdout, discover support and select `detail: "summary"`; complete
@@ -346,7 +349,9 @@ explicit path or endpoint and do not need it.
   exception facts, lossless integer registers, usedImages UUIDs, and
   documented classification matches. Only `bug_type` `"309"` yields a crash
   body; other types, including `"288"` stackshots, return no crash result.
-  Opened Mach-O and dSYM UUID joins remain unobserved. See the
+  Select an optional `join_path` for UUID-and-architecture matching to one
+  local Mach-O or dSYM; preserve slice identity and unjoined reasons. Joined
+  static addresses do not resolve function names or dSYM symbols. See the
   [Apple IPS guide](https://github.com/morluto/rea/blob/main/docs/apple-ips.md).
 - Linux kernel module metadata: `inspect_kernel_module` with the explicit local
   ELF32/ELF64 relocatable file. This built-in target-free inspection requires
@@ -618,9 +623,11 @@ history in a new process. Retention is bounded and is not automatic persistence.
 ## Local installation notes (added locally)
 
 This copy tracks `.agents/skills/reverse-engineer-anything` on `morluto/rea`
-main (skill metadata version 62, synced 2026-11-10) while the installed
-engine is `rea` / `rea-agents` 6.8.0. The skill text can therefore name
-operations the installed release does not have. Before calling any tool:
+main (frontmatter version "62"; content re-synced 2026-11-13, upstream
+SKILL.md blob `baea9f52`) while the installed engine is `rea` / `rea-agents`
+6.8.0. npm released 6.9.0 afterwards, but this machine has not been upgraded.
+The skill text can therefore name operations the installed release does not
+have. Before calling any tool:
 
 - Prefer the local CLI: locate it with `command -v rea` and confirm
   `rea --version`. `rea --help` is the authoritative command list; the CLI has
@@ -629,14 +636,18 @@ operations the installed release does not have. Before calling any tool:
   this session. When they are absent, use the target-free CLI commands in
   [references/windows-exe.md](references/windows-exe.md) and keep complete
   inline Evidence.
-- Operations added after 6.8.0 (`inspect_native_initializers`,
-  `inspect_elf_unwind_ranges`, `inspect_kernel_build_config`,
-  `inspect_windows_shortcut`, `inspect_binary_hardening`, and the desktop
-  build-computer tools) are not in this installation. Do not invent a call:
-  report the capability gap and continue with supported evidence.
+- Operations added after 6.8.0 (`audit_release_exposure`,
+  `inspect_native_initializers`, `inspect_elf_unwind_ranges`,
+  `inspect_kernel_build_config`, `inspect_windows_shortcut`,
+  `inspect_binary_hardening`, and the desktop build-computer tools) are not in
+  this installation. Do not invent a call: report the capability gap and
+  continue with supported evidence.
+- Upstream can change files without raising the frontmatter version (11-11
+  changed SKILL.md and four references while version stayed "62"). When
+  checking for updates, compare GitHub blob hashes, not the version string.
 - Deep native decompilation needs a configured provider (`rea providers`,
-  `rea doctor`). Do not install Ghidra/Hopper/IDA, upgrade `rea`, or start
-  runtime observation without the user's explicit approval.
+  `rea doctor`). Do not install Ghidra/Hopper/IDA, upgrade `rea` to 6.9.0, or
+  start runtime observation without the user's explicit approval.
 - `references/windows-exe.md` and `scripts/pe_triage.py` are local additions,
   not upstream files. Re-syncing from upstream replaces the other files;
   reapply the description change, the Windows PE route entry, the guide link

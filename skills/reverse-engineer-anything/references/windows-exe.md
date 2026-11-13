@@ -4,22 +4,24 @@
 target first」的各个条目里；这里把它收成一条可执行的顺序：**先分型 → 再取静态
 证据 → 最后才考虑深度反编译**。所有命令都只读文件，不执行目标。
 
-## 0. 三条硬边界（本机 2026-11-10 实测）
+## 0. 三条硬边界（本机 2026-11-13 复核：`rea` 仍 6.8.0）
 
 1. **本机 `rea` CLI 是 6.8.0**（`command -v rea` 定位，`rea --version` 确认），
-   而本技能文档同步自 GitHub main 的 v62。`rea --help` 才是本机真实命令清单；
-   文档里出现、6.8.0 里没有的操作不要调。当前已知缺：
-   `inspect-binary-hardening`、`inspect-elf-unwind-ranges`、
-   `inspect-kernel-build-config`、`inspect-native-initializers`、
-   `inspect-windows-shortcut`，以及 desktop build-computer 系列。
-   调用前用 `rea <command> --help` 确认；不存在就如实报能力缺口。
+   而本技能文档同步自 GitHub main（frontmatter 仍写 v62，但 11-11 内容又变，
+   11-13 按 blob 哈希再同步）。`rea --help` 才是本机真实命令清单；
+   文档里出现、6.8.0 里没有的操作不要调。当前已知缺（11-13 逐条核对）：
+   `audit-release-exposure`、`inspect-binary-hardening`、
+   `inspect-elf-unwind-ranges`、`inspect-kernel-build-config`、
+   `inspect-native-initializers`、`inspect-windows-shortcut`，
+   以及 desktop build-computer 系列。npm 已发 6.9.0，本机未升级，别把新文档的
+   能力当成已有的；调用前用 `rea <command> --help` 确认，不存在就如实报缺口。
 2. **MCP 会话不一定连着 REA**。WorkBuddy 会话里若没有 `open_binary` 等工具，
    走 CLI 的 target-free 命令（下面第 3 节），不要假装 MCP 结果存在。
    CLI 里也没有 `open-binary` 子命令，那是 MCP 工具名。
 3. **深度反编译需要原生引擎**。本机 `rea providers` 只列出
    `rea-dotnet-static`、`sqlite`、`rea-artifact-graph`（部分可用）；直接跑
    `rea analyze <path>` 会返回 `provider_unavailable`。不要擅自安装
-   Ghidra / Hopper / IDA，也不要擅自 `rea update`；先报告用户，等明确授权。
+   Ghidra / Hopper / IDA，也不要擅自 `rea update` 到 6.9.0；先报告用户，等明确授权。
    运行时观察（启动/附加/插桩）同样要单独授权，见
    [runtime-observation.md](runtime-observation.md)。
 
@@ -50,9 +52,12 @@ Authenticode 表位置、各节熵与字节标记，输出分两部分：
 
 | 样本 | 脚本判定 | 交叉验证 |
 | --- | --- | --- |
-| `C:\Windows\System32\cmd.exe` | PE32+ / amd64 / native，43 DLL、286 个导入函数 | `rea inspect-pe-imports` 的 SHA-256 一致 `15cd209c…` |
+| `C:\Windows\System32\cmd.exe` | PE32+ / amd64 / native，43 DLL、286 个导入函数 | `rea inspect-pe-imports` 的 `subject.digest.sha256` 与脚本一致 |
 | `...\Framework64\v4.0.30319\AddInProcess.exe` | PE32 / i386 / dotnet（CLR 目录） | `rea inspect-managed-artifact` 返回合法 Evidence |
 | `D:\Program Files\WorkBuddy\WorkBuddy.exe` | PE32+ / amd64 / electron（`electron.asar`，204 MB，有签名表） | 大文件在 256 MiB 默认上限内正常完成 |
+
+> 注：系统文件会随 Windows 更新改变（11-10 与 11-13 的 `cmd.exe` SHA-256 就不同）。
+> 文档里不要写死哈希，一律以当次实测的 `subject.digest.sha256` 与脚本输出比对为准。
 
 ## 2. 按路线选工具
 
