@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-13 13:02:25",
-  "skills_count": 9,
-  "total_bytes": 1478701,
+  "synced_at": "2026-11-16 15:23:15",
+  "skills_count": 10,
+  "total_bytes": 1654600,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -65,6 +65,13 @@
       "files": 11,
       "bytes": 48497,
       "sha256_of_manifest": "68db2af6c071f5cc"
+    },
+    {
+      "dir": "workbuddy-cleanup",
+      "source": "local",
+      "files": 10,
+      "bytes": 175899,
+      "sha256_of_manifest": "b695a396fb7b66fa"
     }
   ]
 }
