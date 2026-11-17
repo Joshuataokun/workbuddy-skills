@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-16 15:23:15",
+  "synced_at": "2026-11-18 01:07:15",
   "skills_count": 10,
-  "total_bytes": 1654600,
+  "total_bytes": 1693254,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -41,9 +41,9 @@
     {
       "dir": "my-project-card",
       "source": "local",
-      "files": 13,
-      "bytes": 139003,
-      "sha256_of_manifest": "be10e866e2619049"
+      "files": 16,
+      "bytes": 168372,
+      "sha256_of_manifest": "a1b7a60cb74e3065"
     },
     {
       "dir": "prompt-rewrite-guard",
@@ -70,8 +70,8 @@
       "dir": "workbuddy-cleanup",
       "source": "local",
       "files": 10,
-      "bytes": 175899,
-      "sha256_of_manifest": "b695a396fb7b66fa"
+      "bytes": 185184,
+      "sha256_of_manifest": "187532f5ec006681"
     }
   ]
 }

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""SessionStart hook：注入跨空间高危坑提醒 ＋ 当前活跃交接摘要。
+"""SessionStart hook：注入跨空间高危坑提醒 ＋ 交接摘要 ＋ 记忆预算预警。
 
 设计约束：
 - 只依赖标准库；任何异常静默退出（exit 0），绝不阻塞会话启动
 - 坑索引前 N 条（约 700 字符）＋ 交接摘要（≤220 字符），总量可控
+- 预算预警（v2.3.0）只在用户级/空间级 MEMORY.md 超 80% 时加一行，只读、不阻断
 - 数据源：references/pitfalls-INDEX.md；条目数由 <!-- inject: N --> 控制
 - 交接摘要来自 ~/.workbuddy/handoff-active.json 指向的 HANDOVER.md（7 天过期）
 - 输出统一走 stdout.buffer 显式 UTF-8（Windows 管道默认 cp936 会乱码，2026-11-08 实测）
@@ -24,6 +25,7 @@ try:
     parts = []
     n_pit = 0
     n_hand = 0
+    n_bud = 0
 
     # ---- 1. 坑提醒 ----
     if os.path.isfile(IDX):
@@ -73,6 +75,19 @@ try:
     except Exception:
         pass  # 静默：交接是增强项，失败不阻塞
 
+    # ---- 3. 记忆预算预警（v2.3.0，复用现有 hook，不新增 Stop 条目）----
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import memory_check
+        warn, txt = memory_check.budget_status()
+        if warn:
+            parts.append("<memory-budget>\n" + txt + "\n</memory-budget>")
+            n_bud = 1
+    except Exception:
+        pass  # 静默：预算预警是增强项，失败不阻塞坑提醒
+
     if parts:
         out = "\n".join(parts) + "\n"
         buf = getattr(sys.stdout, "buffer", None)
@@ -86,8 +101,9 @@ try:
         if os.path.isfile(LOG) and os.path.getsize(LOG) > 20000:
             os.remove(LOG)
         with io.open(LOG, "a", encoding="utf-8") as f:
-            f.write("%s injected=%d handoff=%d\n" % (
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), n_pit, n_hand))
+            f.write("%s injected=%d handoff=%d budget=%d\n" % (
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                n_pit, n_hand, n_bud))
     except Exception:
         pass
 except Exception:

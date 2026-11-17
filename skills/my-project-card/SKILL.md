@@ -2,12 +2,12 @@
 name: my-project-card
 display_name: 我的项目卡片
 display_name_en: My Project Card
-description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
-description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
-description_en: Project-space card for one workspace or one long-running project - goal, constraints, rejected approaches, progress, todo and pitfalls, with one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space skill card, update the space card, update the card, note it on the card, read the card, continue from last time, where did we leave off, resume in a fresh session, or create a sub-card. End of each turn automatically prompts a card update, cleans this turn's intermediate artifacts from a narrow allowlist, and registers reusable outputs into a shared area - no need to ask for an update every time. Also triggered by converge, wrap up, clean intermediate artifacts, clean junk, tidy the workspace, handoff, or read handoff. This writes records into the project card and does the workspace wrap-up; it does not modify skill files and does not compact context.
-version: 2.2.0
+description: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。用户说"压缩记忆""记忆体检""记忆预算""整理记忆"时做只读体检，出带编号的待整合清单（只出提案、不自动删，细则见 references/memory-budget.md）；会话启动时记忆超 80% 会自动提示。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
+description_zh: 项目空间卡片（用户口语：空间卡片、技能卡片、项目卡、状态板）。一个工作空间或一个长期项目建一张卡，记目标、口径、已排除方案、进度、待办和踩过的坑；每条工作线一本分册，多个会话同时干活不会互相覆盖。用户说"更新空间技能卡片""更新空间卡片""更新卡片""卡里记一下""记到卡片""读卡""接着上次""上次做到哪了""继续上次的活""重开会话接着干""新会话继续""这个空间干到哪了""开个分册"时使用。每轮收尾自动补卡、按白名单清中间产物和测试文件、把可复用成果登记到公共区；用户说"收敛""收尾""清理中间产物""清垃圾""空间整理""交接""读交接"时同样走这套收尾。不用每次单独说一句更新卡片。用户说"压缩记忆""记忆体检""记忆预算""整理记忆"时做只读体检，出带编号的待整合清单（只出提案、不自动删，细则见 references/memory-budget.md）；会话启动时记忆超 80% 会自动提示。这是往项目卡里写记录和做空间收尾，不是修改技能文件，也不是压缩上下文。
+description_en: Project-space card for one workspace or long-running project - goal, constraints, rejected approaches, progress, todo, pitfalls; one sub-card per workstream so concurrent sessions never overwrite each other. Use when the user says update the space card, note it on the card, read the card, continue from last time, resume in a fresh session, or create a sub-card. Each turn a Stop guard prompts a card update, cleans this turn's intermediate artifacts from a narrow allowlist, and registers reusable outputs into a shared area - no need to ask every time. Also triggered by converge, wrap up, clean junk, handoff, compress memory, memory audit or tidy memory - the last three run a read-only MEMORY.md budget check that emits numbered consolidation proposals and never deletes automatically, see references/memory-budget.md. This writes card records and does workspace wrap-up; it does not modify skill files or compact context.
+version: 2.3.0
 author: Joshuataokun
-tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑,收敛,收尾,清理中间产物,交接,公共区
+tags: 项目卡片,空间卡片,技能卡片,项目卡,状态板,主卡,分册,接着上次,跨会话,多会话,进度延续,工作面,踩过的坑,收敛,收尾,清理中间产物,交接,公共区,压缩记忆,记忆体检,记忆预算
 ---
 
 # 我的项目卡片
@@ -180,3 +180,13 @@ python $CARD audit --slug poker-game
 删不掉、拿不准、被引用的一律保留。细则与换机重注册见 `references/wrap-routing.md`（唯一主本）。
 
 改完 hooks **不会热加载**，要重启 WorkBuddy 或在 `/hooks` 面板审阅。
+
+## 九、记忆预算与整合（v2.3.0，只出提案不自动删）
+
+用户说「压缩记忆」「记忆体检」「记忆预算」「整理记忆」→ 跑 `scripts/memory_check.py check`，量用户级与空间级 `MEMORY.md` 的字符／行数，出带编号的待整合清单。四类候选：失效标记、重复条目、别处已有、待核实。
+
+- 阈值 3000 字符 / 70 行；超 80% 时由 SessionStart 的 `pitfall_inject.py` 自动提示一行，**不阻断、不新增 hook 条目**。
+- `check` **只读**，绝不改文件；要改必须逐条给 `--ids` 并加 `--confirm`，删前备份 + sha256 + 写变更报告。
+- **用户级 MEMORY.md 全空间共用，只读体检**；`apply --scope user` 一律拒绝，只有空间级允许 apply。
+- 不做日志归档、不按年龄淘汰条目、不把 MEMORY.md 改成索引分层、不自动压缩上下文。
+- 命令速查、判据、护栏与出处见 `references/memory-budget.md`（唯一主本）。

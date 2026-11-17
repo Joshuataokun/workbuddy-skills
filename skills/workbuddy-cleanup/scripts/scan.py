@@ -128,7 +128,9 @@ def main():
     sq_enabled = bool(sq.get("enabled"))
     sq_ttl_ms = sq.get("ttlDays", 7) * 86400000
     cr = sq.get("candidateRule", {})
-    sq_max_bytes = cr.get("maxDirMB", 1) * MB
+    # v9.4：移除 maxDirMB 体积上限（无该键则不设限，带文件空间照样入选）
+    sq_max_bytes = cr.get("maxDirMB", 0) * MB  # 0 = 不限制体积
+    sq_min_dead = int(cr.get("requireDeadSessionsMin", 1))  # 至少 1 条软删会话
     sq_written_ms = cr.get("excludeIfWrittenWithinHours", 24) * 3600000
     sq_exclude = set(cr.get("excludeDirNames", []))
 
@@ -395,8 +397,10 @@ def main():
             is_cand = False; reasons.append("有 %d 个活会话" % al)
         if has_name:
             is_cand = False; reasons.append("有显示名")
-        if b > sq_max_bytes:
-            is_cand = False; reasons.append("体积 %.2fMB > %.0fMB" % (b / MB, cr.get("maxDirMB", 1)))
+        if dd < sq_min_dead:
+            is_cand = False; reasons.append("软删会话 %d < %d（非用户已删）" % (dd, sq_min_dead))
+        if sq_max_bytes > 0 and b > sq_max_bytes:
+            is_cand = False; reasons.append("体积 %.2fMB > %.0fMB" % (b / MB, cr.get("maxDirMB", 0)))
         if recent:
             is_cand = False; reasons.append("24h 内有写入")
         e = {"dir": name, "path": p, "bytes": b, "files": f, "max_mtime": mx,
@@ -406,8 +410,9 @@ def main():
         inv.append(e)
         if is_cand and sq_enabled:
             cand.append({"dir": name, "path": p, "bytes": b, "files": f,
-                         "lastWrite": mx, "aliveSessions": al, "hasDisplayName": has_name,
-                         "reason": "v9.3 方案C：0活会话+无显示名+24h无写入+<=%.0fMB" % cr.get("maxDirMB", 1)})
+                         "lastWrite": mx, "aliveSessions": al, "deadSessions": dd,
+                         "hasDisplayName": has_name,
+                         "reason": "v9.4 方案C：在表+0活会话+无显示名+>=%d软删会话+24h无写入（不限体积）" % sq_min_dead})
     out["inventory"] = inv
     out["candidates_27"] = cand
     out["candidate_total_bytes"] = sum(c["bytes"] for c in cand)

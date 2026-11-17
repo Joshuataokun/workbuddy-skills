@@ -343,6 +343,63 @@ def do_retention():
 
 
 # ===================== 2.7 已删除空间隔离 =====================
+def db_sync_delete(paths):
+    """v9.4 / 3a：同步删除 workbuddy.db 的 workspaces 表对应行。
+    删前用 SQLite online backup 字节级备份（含 WAL），事务化、幂等。
+    只删传入的、已经隔离区 manifest 交叉验证过的路径。"""
+    res = {"ok": False, "backup": None, "backup_sha": None,
+           "deleted": [], "failed": [], "wanted": len(paths)}
+    if not paths:
+        res["ok"] = True
+        return res
+    bdir = os.path.join(RUNS, "names-snapshot")
+    os.makedirs(bdir, exist_ok=True)
+    bpath = os.path.join(bdir, "workbuddy.db.before-spaces")
+    src = None
+    try:
+        src = sqlite3.connect(DB, timeout=30)
+        dst = sqlite3.connect(bpath)
+        src.backup(dst)          # online backup，包含 WAL 未落盘事务
+        dst.close()
+        res["backup"] = bpath
+        res["backup_sha"] = X.sha256_file(bpath)
+        if res["backup_sha"] is None:
+            res["failed"].append({"err": "DB备份SHA256读取失败"})
+            return res
+    except Exception as e:
+        res["failed"].append({"err": "DB备份失败:" + str(e)[:150]})
+        try:
+            if src: src.close()
+        except Exception:
+            pass
+        return res
+    try:
+        want = set(os.path.normcase(os.path.normpath(p)) for p in paths)
+        rows = src.execute("SELECT rowid, path FROM workspaces").fetchall()
+        targets = [(rid, p) for rid, p in rows
+                   if os.path.normcase(os.path.normpath(p)) in want]
+        for rid, p in targets:
+            try:
+                src.execute("DELETE FROM workspaces WHERE rowid=?", (rid,))
+                res["deleted"].append(p)
+            except Exception as e:
+                res["failed"].append({"path": p, "err": str(e)[:120]})
+        src.commit()
+    except Exception as e:
+        res["failed"].append({"err": "DB删行失败:" + str(e)[:150]})
+        try:
+            src.rollback()
+        except Exception:
+            pass
+    finally:
+        try:
+            src.close()
+        except Exception:
+            pass
+    res["ok"] = not res["failed"]
+    return res
+
+
 def do_spaces():
     POL = load(os.path.join(WB, "cleanup-policy.json"))
     sq = POL.get("spaceQuarantine", {})
@@ -421,7 +478,7 @@ def do_spaces():
     if ok_items:
         man = {"batch": "%s-%s" % (day, S["ts"].split("-")[1]),
                "createdAt": int(time.time() * 1000),
-               "reason": "v9.3 方案 C：已删除空间隔离",
+               "reason": "v9.4 方案 C：已删除空间隔离（含文件，同步删DB行）",
                "ttlDays": ttl, "items": ok_items}
         with open(mp, "w", encoding="utf-8") as f:
             json.dump(man, f, ensure_ascii=False, indent=1)
@@ -429,10 +486,55 @@ def do_spaces():
         if os.path.isdir(m["from"]):
             bb, ff, _ = X.dir_stat(m["from"])
             rebuilt.append({"dir": m["dir"], "files": ff, "bytes": bb})
+
+    # ---- v9.4 / 3a：同步删 workspaces 表对应行（需 manifest 交叉验证）----
+    dbsync = sq.get("dbSync", {})
+    dbsync_result = {"enabled": bool(dbsync.get("enabled")), "deleted": [],
+                     "failed": [], "ok": True, "skipped": [], "backup": None,
+                     "requireManifestCrossCheck": bool(dbsync.get("requireManifestCrossCheck", True))}
+    if dbsync.get("enabled"):
+        # 1) 收集隔离区所有 manifest 里 from 指向 EW 一级空间目录的路径
+        q_froms = set()
+        for qroot in (QR_E, QR_C):
+            if not os.path.isdir(qroot):
+                continue
+            for bn in os.listdir(qroot):
+                mpath = os.path.join(qroot, bn, "manifest.json")
+                if not os.path.isfile(mpath):
+                    continue
+                try:
+                    mitems = load(mpath).get("items", [])
+                except Exception:
+                    continue
+                for it in mitems:
+                    frm = it.get("from", "") if isinstance(it, dict) else ""
+                    if frm and os.path.dirname(X.norm(frm)) == X.norm(EW):
+                        q_froms.add(X.norm(frm))
+        # 2) DB 中磁盘源已不存在、但隔离区 manifest 能对上的孤儿行
+        orphans = []
+        try:
+            con = sqlite3.connect("file:%s?mode=ro" % DB.replace("\\", "/"), uri=True)
+            for (ppath,) in con.execute("SELECT path FROM workspaces").fetchall():
+                if X.norm(ppath) in q_froms and not os.path.isdir(ppath):
+                    orphans.append(ppath)
+            con.close()
+        except Exception as e:
+            dbsync_result["failed"].append({"err": "孤儿行扫描失败:" + str(e)[:120]})
+        # 3) 本轮成功移走的源 + 孤儿行，去重后同步删 DB
+        to_delete = list(dict.fromkeys([m["from"] for m in moved] + orphans))
+        dbsync_result["wanted"] = len(to_delete)
+        if to_delete:
+            r = db_sync_delete(to_delete)
+            dbsync_result.update(r)
+        dbsync_result["ok"] = not dbsync_result["failed"]
+        # 幂等重跑：合并历史已删，不丢失记录
+        prev = ph.get("db_sync", {}).get("deleted", [])
+        dbsync_result["deleted"] = list(dict.fromkeys(prev + dbsync_result["deleted"]))
+
     due = int(time.time() * 1000) + ttl * 86400000
     ph.update({"enabled": True, "candidates": len(plan), "moved": moved,
                "failed": failed, "skipped_changed": skipped, "refused": refused,
-               "rebuilt_shells": rebuilt,
+               "rebuilt_shells": rebuilt, "db_sync": dbsync_result,
                "moved_bytes": sum(m["bytes"] for m in moved),
                "batch": day, "manifest": mp if ok_items else None,
                "manifest_items": len(ok_items), "ttlDays": ttl,
@@ -440,9 +542,9 @@ def do_spaces():
                "nextDueText": datetime.datetime.fromtimestamp(due / 1000).strftime("%Y-%m-%d %H:%M"),
                "complete": True})
     put("spaces", ph)
-    print("SPACES candidates=%d moved=%d bytes=%d failed=%d rebuilt=%d manifest=%s due=%s" % (
+    print("SPACES candidates=%d moved=%d bytes=%d failed=%d rebuilt=%d manifest=%s dbsync=%s due=%s" % (
         ph["candidates"], len(moved), ph["moved_bytes"], len(failed),
-        len(rebuilt), bool(ph["manifest"]), ph["nextDueText"]), flush=True)
+        len(rebuilt), bool(ph["manifest"]), len(dbsync_result["deleted"]), ph["nextDueText"]), flush=True)
 
 
 # ===================== 收尾：验收 + 写运行记录 + 状态 + 日志 + 删锁 =====================
@@ -506,17 +608,33 @@ def do_finalize():
                    "same": chars == m["chars"] and int(st.st_mtime * 1000) == m["mtime_ms"]})
     V["V5"] = {"ok": all(x.get("same", False) for x in v5), "items": v5}
 
-    # V6 DB mtime 与 workspaces 行数
+    # V6 DB 行数：v9.4/3a 授权删行后，减少数必须精确等于 dbsync.deleted
+    #   （未授权的行一行都不许多删；mtime 变化是授权删行的预期结果）
+    sp_phase = phases["spaces"] or {}
+    ds = sp_phase.get("db_sync", {})
+    deleted_cnt = len(set(ds.get("deleted", []))) if ds.get("enabled") else 0
     try:
         con = sqlite3.connect("file:%s?mode=ro" % DB.replace("\\", "/"), uri=True)
         rows = con.execute("SELECT COUNT(*) FROM workspaces").fetchone()[0]
+        # 逐条回读：已删路径必须真的不在表里
+        still = []
+        for dp in ds.get("deleted", []):
+            if con.execute("SELECT COUNT(*) FROM workspaces WHERE path=?", (dp,)).fetchone()[0]:
+                still.append(dp)
         con.close()
     except Exception as e:
         rows = "ERR:%s" % e
+        still = ["ERR:%s" % e]
     dbm = int(os.stat(DB).st_mtime * 1000) if os.path.isfile(DB) else None
-    V["V6"] = {"ok": rows == base["workspaces_rows"] and dbm == base["db_mtime_ms"],
+    expect_rows = base["workspaces_rows"] - deleted_cnt
+    backup_ok = bool(ds.get("backup")) and bool(ds.get("backup_sha")) and os.path.isfile(ds["backup"])
+    V["V6"] = {"ok": (rows == expect_rows and not still
+                      and (deleted_cnt == 0 or backup_ok)),
                "rows_before": base["workspaces_rows"], "rows_after": rows,
-               "mtime_before": base["db_mtime_ms"], "mtime_after": dbm}
+               "expected_after": expect_rows, "authorized_deleted": deleted_cnt,
+               "still_present": still, "db_backup_ok": backup_ok,
+               "mtime_before": base["db_mtime_ms"], "mtime_after": dbm,
+               "mtime_changed_expected": deleted_cnt > 0}
 
     # V7 删除对象全在四类清单内（脚本保证）+ refused / skipped 如实列出
     V["V7"] = {"ok": True, "refused": sum((phases[n] or {}).get("refused_total", 0)
@@ -566,11 +684,14 @@ def do_finalize():
             man_ok = False
     V["V11"] = {"ok": (all(not os.path.isdir(x["from"]) and os.path.isdir(x["to"])
                            for x in mv) and man_ok and snap_ok
-                       and V["V6"]["rows_after"] == base["workspaces_rows"]),
+                       and V["V6"]["ok"]  # DB 行数精确匹配授权删行数
+                       and (not sp.get("db_sync", {}).get("enabled")
+                            or sp.get("db_sync", {}).get("ok", False))),
                 "moved": len(mv), "manifest_ok": man_ok,
                 "names_snapshot_ok": snap_ok,
                 "rebuilt_shells": sp.get("rebuilt_shells", []),
-                "db_rows": V["V6"]["rows_after"]}
+                "db_rows": V["V6"]["rows_after"],
+                "db_sync": sp.get("db_sync", {})}
 
     disk_after = disk()
     # 占用地图：按策略每次重测
@@ -620,6 +741,7 @@ def do_finalize():
                                  "nextDueText": sp.get("nextDueText"),
                                  "manifest_items": sp.get("manifest_items", 0),
                                  "rebuilt_shells": sp.get("rebuilt_shells", []),
+                                 "db_sync": sp.get("db_sync", {}),
                                  "failed": sp.get("failed", []),
                                  "skipped_changed": sp.get("skipped_changed", []),
                                  "really_freed": False},
@@ -638,7 +760,7 @@ def do_finalize():
     st = load(STATE)
     st["lastRunAt"] = now
     st["lastStatus"] = status
-    st["lastMode"] = "v9.3-full"
+    st["lastMode"] = "v9.4-full"
     st["lastRCount"] = S["R_count"]
     st["lastAliveCount"] = S["alive_count"]
     st["lastDeadCount"] = S["dead_count"]
@@ -651,7 +773,7 @@ def do_finalize():
                              for x in space_map_now[:10]},
                           "C_free_GB": round(freeC, 3),
                           "E_free_GB": round(freeE, 3)}
-    st["note"] = "v9.3：缓存/隔离/回滚/已删空间四类自动动作；删除实体多进回收站，可用空间需用户手动清空才释放。"
+    st["note"] = "v9.4：缓存/隔离/回滚/已删空间四类自动动作；已删空间含文件整目录移隔离区并同步删 workspaces 行；删除实体多进回收站，可用空间需用户手动清空才释放。"
     qb = []
     for b in st.get("quarantine", {}).get("batches", []):
         if b.get("batch") == "20261104" and V["V9"]["ok"]:
@@ -660,7 +782,7 @@ def do_finalize():
         qb.append(b)
     if sp.get("manifest"):
         qb.append({"batch": sp["batch"], "root": QR_E,
-                   "reason": "v9.3 方案 C：已删除空间隔离",
+                   "reason": "v9.4 方案 C：已删除空间隔离（含文件，同步删DB行）",
                    "files": sp["manifest_items"], "MB": sq_MB,
                    "at": sp.get("nextDue", now) - int(sp.get("ttlDays", 7)) * 86400000,
                    "releaseAfter": sp.get("nextDue"), "released": False})
@@ -676,7 +798,9 @@ def do_finalize():
     st["spaceQuarantine"] = {"nextDue": sp.get("nextDue"),
                              "nextDueText": sp.get("nextDueText"),
                              "ttlDays": sp.get("ttlDays"),
-                             "batch": sp.get("batch")}
+                             "batch": sp.get("batch"),
+                             "dbSync": sp.get("db_sync", {}),
+                             "version": "v9.4"}
     hist = st.get("history", [])
     hist.append({"at": now, "freedMB": cache_MB, "releasedMB": released_MB,
                  "retentionMB": retention_MB, "spaceQuarantineMB": sq_MB,

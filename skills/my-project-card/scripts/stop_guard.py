@@ -182,7 +182,7 @@ def wrote_card_this_turn(slug: str, turn_iso: str) -> bool:
 
 
 def reason_text(slug: str, cwd: str) -> str:
-    return (
+    text = (
         "本轮在「%s」这张项目卡对应的空间里改了文件，但卡片事件流没有本轮的写入记录。"
         "守卫自动触发，用户不必说「更新卡片」。收工前请补一条：把 <本轮结论> 换成实际做完的事或新定的口径，用命令 "
         "python \"%s\" add --slug %s --section 进度 --text \"<本轮结论>\" "
@@ -192,6 +192,13 @@ def reason_text(slug: str, cwd: str) -> str:
         "收尾按 ~/.workbuddy/skills/my-project-card/references/wrap-routing.md 的归属表执行：同一件事只写一处；"
         "本轮中间产物由 Stop hook 的清理脚本处理，不要自己删文件。"
     ) % (slug, CARD_PY, slug, cwd)
+    # 预算状态放在格式化之后拼接：文本里含「80%」，提前拼会被 % 格式化误解析
+    try:
+        import memory_check
+        warn, txt = memory_check.budget_status(cwd)
+        return text + (" " + txt if warn else "")
+    except Exception:
+        return text  # fail-open：预算预警是增强项，失败不影响拦截
 
 
 def block(slug: str, cwd: str, sid: str, turn_iso: str) -> None:

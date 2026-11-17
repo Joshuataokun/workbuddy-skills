@@ -427,7 +427,7 @@ def main():
             if ok_items:
                 man = {"batch": "%s-%s" % (day, ts.split("-")[1]),
                        "createdAt": int(time.time() * 1000),
-                       "reason": "v9.3 方案 C：已删除空间隔离",
+                       "reason": "v9.4 方案 C：已删除空间隔离（含文件，同步删DB行）",
                        "items": ok_items}
                 mp = os.path.join(batchdir, "manifest.json")
                 with open(mp, "w", encoding="utf-8") as f:

@@ -29,15 +29,19 @@ tags: WorkBuddy,工作空间,清理,缓存,体检,占用地图,隔离区,回滚,
 | 2 缓存 | 白名单目录逐文件删，24h 内不动 | 策略 `autoDeleteWhitelist` | 各规则 `ttlHours` |
 | 2.5 隔离区 | 到期批次释放（删到批次根） | 用户 11-04「自动检测超期隔离，自动删」 | `quarantine.ttlDays` |
 | 2.6 回滚备份 | 三类到期条目删（仅三个具名子目录） | 用户 11-09「所有回滚备份设期限」 | `retention.classes[].ttlDays` |
-| 2.7 已删空间 | 严格筛选后**同盘移入隔离区**，不直接删 | 用户 11-09「按方案 C 执行」 | `spaceQuarantine.ttlDays` |
+| 2.7 已删空间 | 严格筛选后**整目录连同全部文件同盘移入隔离区**，不直接删；成功后**同步删 workspaces 表对应行** | 用户 11-16 选 1b/2a/3a（11-09 方案 C 是前身） | `spaceQuarantine.ttlDays` |
 
-**红线（一个字节都不许动）**：会话（含已删）、对话正文 `*.jsonl`、`projects\`、`workbuddy.db`、`workspace-display-names.json` 原件、附件/上传图、活空间任何文件、有活会话或有显示名的空间目录、隔离区未到期批次、回收站整体、`.workbuddy` 和 `E:\WorkBuddy` 整体递归扫描。
+**2.7 候选规则（v9.4，四条全满足）**：①在 `workspaces` 表 ②0 活会话 ③无显示名 ④至少 1 条软删会话（`deleted_at` 非空，证明用户已删）。**已取消体积上限**——28MB 带招标书的目录照样入选（1b）。24h 内有写入、有活会话、有显示名一律排除。
+
+**2.7 的 DB 同步（3a）**：空间移入隔离区成功后，同步删 `workbuddy.db` 的 `workspaces` 表对应行，根治"新建任务下拉残留时间戳"。只删两类路径：本轮成功移走的 + 磁盘源已不存在且隔离区 manifest 的 `from` 能对上的孤儿行。删前字节级备份 DB、事务化、幂等；V6 验收要求减少行数精确等于授权删除数，多删一行即失败。
+
+**红线（一个字节都不许动）**：会话（含已删）、对话正文 `*.jsonl`、`projects\`、`workspace-display-names.json` 原件、附件/上传图、活空间任何文件、有活会话或有显示名的空间目录、隔离区未到期批次、回收站整体、`.workbuddy` 和 `E:\WorkBuddy` 整体递归扫描。`workbuddy.db` 仅在 2.7 DB 同步的授权范围内、经 manifest 交叉验证后删行，其余场景只读。
 
 第 2 类例外边界：`workspace\sessions\` 整体是红线，只 `<sid>\` 下 `modify_backup` / `snapfile` / `.modify_backup_meta` 三个具名子目录可删，会话根目录本身不动。
 
 ## 三、执行前必读
 
-1. **完整规格**：`references/spec-v9.3.md` —— 四类动作的判定、保护、报告格式、V1–V11 验收，动手前必须读。
+1. **完整规格**：`references/spec-v9.3.md` —— 四类动作的判定、保护、报告格式、V1–V11 验收，动手前必须读。v9.4 起 2.7 节含「带文件空间入选 + DB 同步删行」，以本节和 `cleanup-policy.json` 为准。
 2. **踩过的坑**：`references/pitfalls.md` —— 11-16 这轮新查出来的坑都在里面（并发锁、全局预算连坐、回收站假释放、大小写归一化、checkpoint 不等于完成等）。**这是本技能最重要的部分，动手前必读。**
 3. **策略字段**：`references/policy.md` —— `cleanup-policy.json` 哪些字段是开关、哪些只是注释（注释不能当开关读）。
 4. **脚本用法**：`scripts/README.md` —— 四阶段脚本的调用顺序与参数。
@@ -119,4 +123,4 @@ WB_CLEAN_WORKDIR="C:/Users/Administrator/AppData/Local/Temp/wbv93" python script
 
 ---
 
-**版本**：1.0.0（2026-11-16）。由定时任务 v9.3 规格转化，新增「分阶段独立预算」「平台安全限制与性能」两节，并把 11-16 实测的 10 条坑写入 `references/pitfalls.md`。
+**版本**：1.1.0（2026-11-16）。在 1.0.0 基础上按用户 1b/2a/3a 授权升级 2.7：取消候选体积上限（纳入带文件空间）、整目录移隔离区 7 天释放、成功后同步删 workspaces 表对应行（备份+manifest 交叉验证+V6 精确计数）。策略升 v9.4，脚本 scan.py/finish.py 同步改。回滚点在 `cleanup-runs/backup-before-1b2a3a-20261116/`。

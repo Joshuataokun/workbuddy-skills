@@ -162,49 +162,52 @@ pid 不存在或超 90 分钟 → 僵尸锁，接管。
 - 不修改任何会话正文、不改数据库、不改 `workspace-display-names.json` 原件、不写隔离区以外的地方。
 - 到期清单必须完整落盘；报告给「类目 / 会话或条目数 / MB / 还剩几天」的未到期摘要，方便用户判断期限是否合适。
 
-# 2.7 自动回收：已删除空间的隔离式清理（第四类自动动作，v9.3 新增 / 方案 C）
+# 2.7 自动回收：已删除空间的隔离式清理（第四类自动动作，v9.3 新增 / v9.4 升级 / 方案 C）
 
-用户 2026-11-09 原话：**「错了，我看错了。是按方案C执行」**——恢复定时任务最初两个目标里被 11-04 禁令否决的第二个：删掉软件左侧导航栏中已被删除的任务空间（时间戳文件夹）。
+用户 2026-11-09 原话：**「错了，我看错了。是按方案C执行」**；用户 2026-11-16 选 **1b/2a/3a**：①纳入带文件空间（含 28MB 招标书目录）②整目录移隔离区 7 天后释放 ③同步删 workspaces 表对应行，根治新建任务下拉残留时间戳。
 
-**性质**：不是直接删。先备份命名文件 → 按冻结清单把候选目录**同盘移入隔离区** → 写 manifest → 满 `spaceQuarantine.ttlDays` 天后由第 2.5 步自动释放。`spaceQuarantine.enabled` 为 false 时整节跳过。
+**性质**：不是直接删。先备份命名文件和 DB → 按冻结清单把候选目录**连同全部文件同盘移入隔离区** → 写 manifest → **同步删 workspaces 表对应行** → 满 `spaceQuarantine.ttlDays` 天后由第 2.5 步自动释放。`spaceQuarantine.enabled` 为 false 时整节跳过。
 
-**实测背景（写进报告，别让用户以为能清出多少空间）**：`workspaces` 表只有 `path` / `last_opened_at` 两列，**没有删除标记**，10 行几乎覆盖全部 11 个磁盘目录；真正符合候选的通常只有两三个近空目录，合计往往不到 0.05 MB。本节的意義是「机制补齐」，不是「腾空间」。
+**实测背景**：`workspaces` 表只有 `path` / `last_opened_at` 两列，**没有删除标记**，不能据此判断用户是否删过空间。v9.4 改用「软删会话数 ≥ 1」证明用户已删，并取消体积上限——所以 28MB 的 11-13 招标书目录也入选。真正释放由 2.5 在 7 天后完成，移入量单独计数，不许写「释放 X MB」。
 
 ## 2.7.1 候选判定：四条全满足，缺一即排除（判定只读）
 
 1. 目录是 `E:\WorkBuddy` 的**直属一级目录**，名字不在 `candidateRule.excludeDirNames`（含 `.trash-quarantine`）。
 2. `workspaces` 表里有该目录的行（`requireWorkspacesRow`）。**注意该表没有删除标记，不能据此判断「用户已删」**——本条只用于确认它曾被应用登记过。
 3. 该目录下**活会话数 = 0**（`deleted_at IS NULL` 且 cwd 指向该目录），且 `workspace-display-names.json` 里**没有**该路径的显示名（`requireNoDisplayName`）。
-4. 目录体积 ≤ `candidateRule.maxDirMB`（1 MB），且**目录内没有任何 `excludeIfWrittenWithinHours`（24h）内被写入的文件**。
+4. **软删会话数 ≥ `candidateRule.requireDeadSessionsMin`（默认 1）**——`deleted_at IS NOT NULL` 且 cwd 指向该目录。这是 v9.4 判断「用户已在左侧删除该空间」的硬证据；一条软删会话都没有的空目录不入选，避免误伤纯空壳。
+5. **目录内没有任何 `excludeIfWrittenWithinHours`（24h）内被写入的文件**。v9.4 起**取消体积上限**（策略里不再有 `maxDirMB`），带文件的空间（如 28MB 的 11-13）照样入选。
 
 硬排除（任一命中即排除，并给出原因）：
 - 有任一活会话 → 排除。实测 `Claw`：不在 `workspaces` 表，但有 1 个活会话 + 显示名，是活空间。
 - 24h 内有写入 → 排除。实测 `时光杂货` 11-09 20:07 仍在写入。
-- 体积 > maxDirMB、路径断言失败（完整路径不是 `E:\WorkBuddy\` 直属一级） → `refused`，列全路径。
+- 软删会话数 < 1 → 排除，标「非用户已删」。
+- 路径断言失败（完整路径不是 `E:\WorkBuddy\` 直属一级） → `refused`，列全路径。
 
-**判定只出清单，不产生删除/移动**。清单落盘 `$WB\cleanup-runs\spaces-<ts>.json`，每条记 `dir` / `path` / `bytes` / `files` / `lastWrite` / `aliveSessions` / `hasDisplayName` / `reason`。
+**判定只出清单，不产生删除/移动**。清单落盘 `$WB\cleanup-runs\spaces-<ts>.json`，每条记 `dir` / `path` / `bytes` / `files` / `lastWrite` / `aliveSessions` / `deadSessions` / `hasDisplayName` / `reason`。
 
 ## 2.7.2 移动前四道保护，缺一即整节中止
 
 1. **命名文件灾备**：把 `workspace-display-names.json` 字节级复制到 `$WB\cleanup-runs\names-snapshot\`，校验 SHA256 一致；失败 → 整个 2.7 中止，报告「命名文件灾备失败，本轮不移动任何空间」。理由见第 11 节 11-04 事故。
 2. **清单冻结**：只按 `spaces-<ts>.json` 里的路径移动，不重新枚举目录；移动前重取体积与最后写入时间，与清单不一致 → 跳过，计入 `skipped_changed`。
-3. **同盘移动**：目标必须是 `spaceQuarantine.quarantineRoot`（E 盘），保证是元数据改名而非跨盘复制；**禁止跨盘、禁止"复制后删源"**。
-4. **数据库只读**：不删 `workspaces` 表行、不改 `workspace-display-names.json` 原件、不改任何会话记录。整节不执行任何 SQL 写操作。
+3. **同盘移动**：目标必须是 `spaceQuarantine.quarantineRoot`（E 盘），保证是元数据改名而非跨盘复制；**禁止跨盘、禁止"复制后删源"**。整目录含全部文件一起移。
+4. **DB 灾备（v9.4 新增，3a 前提）**：删 `workspaces` 表行之前，用 SQLite online backup（含 WAL）把 `workbuddy.db` 字节级备份到 `cleanup-runs/names-snapshot/workbuddy.db.before-spaces`，校验 SHA256；失败 → 不执行任何删行。`workspace-display-names.json` 原件和任何会话记录始终不改。
 
 ## 2.7.3 执行与回读
 
-1. 目标路径 `<隔离根>\<yyyyMMdd>\<原目录名>`，写 `manifest.json`（格式同第 6 节，`reason` 写明「v9.3 方案 C：已删除空间隔离」）。
-2. 逐个候选 `Move-Item`，**禁止 `-Recurse`**；移动后 `Test-Path` 源为 False、目标为 True 才算成功，否则计入 `failed` 并**中止后续候选**。
+1. 目标路径 `<隔离根>\<yyyyMMdd>\<原目录名>`，写 `manifest.json`（格式同第 6 节，`reason` 写明「v9.4 方案 C：已删除空间隔离（含文件，同步删DB行）」）。
+2. 逐个候选 `os.rename`（同盘元数据改名）；移动后 `Test-Path` 源为 False、目标为 True 才算成功，否则计入 `failed` 并**中止后续候选**。
 3. **应用重建检查**：移动后回读 `E:\WorkBuddy` 一级目录；若应用按旧路径自动重建了同名空目录，**不二次移动**，只报告「应用已重建空壳，需用户在侧边栏删除」。这是实测行为，重复移动会造成两个空间。
-4. 报告给「候选数 / 已移入 / 排除原因分布 / 隔离批次号 / 到期日 / 移入体积」；移入量**单独计数**（`lastSpaceQuarantineMB`），不得混进缓存、隔离区释放或 retention 释放量。**移入不等于释放空间**，不许写「释放 X MB」。
-5. 真正释放仍由第 2.5 步统一处理，本节不直接删隔离区内容。
+4. **DB 同步删行（v9.4，3a）**：移入成功后，删除 `workspaces` 表对应路径行。范围严格限定两类：①本轮成功移走的源路径；②磁盘源已不存在、且隔离区某批次 manifest 的 `from` 字段能对上的孤儿行（修复历史遗留——目录已隔离但 DB 行还在，导致下拉仍显示时间戳）。**必须与 manifest 交叉验证**，无 manifest 证据的路径一律不删。事务化执行、逐条回读、幂等；删前已完成 DB 备份（2.7.2 第 4 条）。结果记入 `phase_spaces.db_sync`。
+5. 报告给「候选数 / 已移入 / 排除原因分布 / 隔离批次号 / 到期日 / 移入体积 / DB 删除行数」；移入量**单独计数**（`lastSpaceQuarantineMB`），不得混进缓存、隔离区释放或 retention 释放量。**移入不等于释放空间**，不许写「释放 X MB」。
+6. 真正释放仍由第 2.5 步统一处理，本节不直接删隔离区内容。
 
 ## 2.7.4 红线
 
 - **绝不直接删空间目录**，只移入隔离区。
-- **绝不**动有活会话、有显示名、24h 内有写入、体积 > maxDirMB 的目录。
-- **绝不**改 `workbuddy.db` 任何一行（含 `workspaces` 与 `sessions`）。
-- **绝不**碰 `.trash-quarantine` 自身、`projects\`、会话正文 `*.jsonl`、回收站。
+- **绝不**动有活会话、有显示名、24h 内有写入的目录（v9.4 已无体积上限）。
+- **绝不**改 `sessions` 表任何一行；`workspaces` 表只在 2.7.3 第 4 条授权范围内、经 manifest 交叉验证后删行，**其余路径一行不许多删**——V6 验收要求减少行数精确等于 `db_sync.deleted`，多一行即判失败。
+- **绝不**碰 `.trash-quarantine` 自身、`projects\`、会话正文 `*.jsonl`、回收站、`workspace-display-names.json` 原件。
 - 本节产生的批次仍须满足 2.5.1 五条判定才释放，本节不得绕过。
 
 # 3. 只读体检：占用地图（报告的第一主体）

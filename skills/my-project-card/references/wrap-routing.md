@@ -13,10 +13,13 @@
 | 本轮新建的中间产物、测试文件 | **不写进任何记忆**，只进待删清单和台账 | `wrap_cleanup.py` | Stop 时刻自动，首次 dry-run |
 | 压缩／重开瞬间的会话态（做到哪 / 下一步 / 未决口头事项） | 空间 `.workbuddy/HANDOVER.md`（≤1500 字符，**结论/坑/文件只留指针**） | `handoff.py save` | 用户说「交接」/ 阶段边界 |
 | 下载的工具、可复用的对话成果 | `~/.workbuddy/shared/`（可执行工具放 `~/.workbuddy/bin/`），登记 `~/.workbuddy/shared/INDEX.md`；卡片「关键位置」只留指针 | 助手收尾时判定并搬 | 出现可复用产物时，一次就够 |
+| MEMORY.md 预算状态与待整合候选 | **不写进任何记忆**；只读清单走 stdout／`--out`，变更报告写 `<空间>/.workbuddy/archive/memory-变更报告.md` | `memory_check.py check` / `apply` | 超 80% 时 SessionStart 提示；apply 必须逐条点头 |
 
 **HANDOVER 是会话级快照，不是长期状态**：长期状态仍只写卡片，HANDOVER 独有的只有「目标 / 未决 / 下一步」三样。全文路径由 `~/.workbuddy/handoff-active.json` 记录，SessionStart 只注入 ≤220 字符摘要（细则见 `references/handoff-guide.md`）。
 
 **公共区只放"下次还会用"的东西**：一次性产物不进；收尾先查 `INDEX.md` 有没有同款，有就复用、不重复下载。清理脚本只删白名单垃圾，**不自动搬文件**——判定和搬运由助手做，避免把半成品当成果。
+
+**记忆预算只读**：`memory_check.py check` 只量字符/行数、出候选，不改文件；用户级 `MEMORY.md` 全空间共用，脚本对它**从不写入**（`apply --scope user` 直接拒绝）。删条目前备份 + sha256 + 变更报告，细则见 `references/memory-budget.md`。
 
 **同一件事不许写进两处**。实测踩过：同一结论同时写进卡片、MEMORY.md、当天日志，等于三份要维护的副本；按上表只写卡片，其余两处最多留一句指针。
 
