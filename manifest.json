@@ -1,7 +1,7 @@
 {
-  "synced_at": "2026-11-18 01:07:15",
+  "synced_at": "2026-11-18 10:04:14",
   "skills_count": 10,
-  "total_bytes": 1693254,
+  "total_bytes": 1705294,
   "skills": [
     {
       "dir": "c-drive-cleaner",
@@ -56,8 +56,8 @@
       "dir": "reverse-engineer-anything",
       "source": "local",
       "files": 11,
-      "bytes": 274612,
-      "sha256_of_manifest": "41ac256b7f29dc30"
+      "bytes": 286652,
+      "sha256_of_manifest": "4e918fc38d0e293c"
     },
     {
       "dir": "tuniu-cli",
